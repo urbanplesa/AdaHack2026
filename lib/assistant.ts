@@ -98,11 +98,35 @@ async function buildContext(patientId: string): Promise<string> {
   const library = await prisma.libraryEntry.findMany({
     orderBy: [{ category: "asc" }, { title: "asc" }],
   });
+  const assignments = await prisma.patientExerciseSet.findMany({
+    where: { patientId },
+    include: { exerciseSet: true },
+    orderBy: { startDate: "asc" },
+  });
 
   const lines: string[] = [];
   lines.push(`Diagnoza: ${patient.diagnosis}`);
   if (patient.dischargeDate) {
     lines.push(`Datum odpusta iz bolnišnice: ${patient.dischargeDate.toISOString().slice(0, 10)}`);
+  }
+  const careLines = [
+    patient.timeline && `Okviren potek okrevanja: ${patient.timeline}`,
+    patient.nutrition && `Prehrana: ${patient.nutrition}`,
+    patient.generalRecommendations && `Standardna priporočila: ${patient.generalRecommendations}`,
+    patient.warningSymptoms && `Opozorilni simptomi: ${patient.warningSymptoms}`,
+    patient.alarmYellow && `Rumeni alarm: ${patient.alarmYellow}`,
+    patient.alarmRed && `Rdeči alarm: ${patient.alarmRed}`,
+    patient.equipment && `Potrebna oprema: ${patient.equipment}`,
+  ].filter(Boolean) as string[];
+  if (careLines.length) {
+    lines.push("", "PRIPOROČILA ZA OKREVANJE (iz načrta/kataloga):");
+    lines.push(...careLines.map((l) => `- ${l}`));
+  }
+  if (assignments.length) {
+    lines.push("", "DODELJENI SKLOPI VAJ:");
+    for (const a of assignments) {
+      lines.push(`- ${a.exerciseSet.name} (začetek: ${a.startDate}${a.acknowledgedDate ? ", potrjeno" : ""})`);
+    }
   }
   lines.push("", "MERILNI NAČRTI (z alarmnimi mejami):");
   if (plans.length) lines.push(...plans.map(planLine));
@@ -113,9 +137,11 @@ async function buildContext(patientId: string): Promise<string> {
     const when = m.recordedAt.toISOString().replace("T", " ").slice(0, 16);
     const unit = m.plan?.unit ?? "";
     const val =
-      m.value !== null ? `${m.value}${unit ? ` ${unit}` : ""}` : m.photoUrl ? "naložena slika" : "—";
+      m.value !== null
+        ? `${m.value}${unit ? ` ${unit}` : ""}`
+        : m.valueText ?? (m.photoUrl ? "naložena slika" : "—");
     lines.push(
-      `- ${when} · ${m.plan?.label ?? m.type}: ${val}${m.note ? ` · opomba: ${m.note}` : ""}`,
+      `- ${when} · ${m.plan?.label ?? m.type}: ${val}${m.note ? ` · opomba: ${m.note}` : ""}${m.author === "ZDRAVNIK" ? " · vnesel zdravnik" : ""}`,
     );
   }
   lines.push("", "ODPRTI ALARMI:");

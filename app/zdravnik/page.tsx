@@ -19,8 +19,15 @@ export default async function ZdravnikPage() {
       alerts: { orderBy: { createdAt: "desc" }, include: { measurement: true } },
       medications: true,
       chatMessages: { orderBy: { createdAt: "asc" } },
+      exerciseAssignments: { include: { exerciseSet: true }, orderBy: { startDate: "asc" } },
     },
   });
+
+  const libraryEntries = await prisma.libraryEntry.findMany({
+    orderBy: [{ category: "asc" }, { title: "asc" }],
+  });
+  const exerciseSets = await prisma.exerciseSet.findMany({ orderBy: { id: "asc" } });
+  const standards = await prisma.standard.findMany({ orderBy: { metricType: "asc" } });
 
   const serialized = patients.map((patient) => {
     const openAlerts = patient.alerts.filter((alert) => alert.status === "ODPRT");
@@ -34,6 +41,10 @@ export default async function ZdravnikPage() {
       ...patient.chatMessages.map((item) => item.createdAt),
       patient.createdAt,
     ].sort((a, b) => b.getTime() - a.getTime())[0];
+    // Zadnja ocena stanja iz meritev (severity) — če jo je dal zdravnik
+    const lastSeverity =
+      [...patient.measurements].sort((a, b) => b.recordedAt.getTime() - a.recordedAt.getTime())
+        .find((m) => m.severity)?.severity ?? null;
 
     return {
       id: patient.id,
@@ -46,19 +57,48 @@ export default async function ZdravnikPage() {
       email: patient.user.email,
       latestActivity: latestActivity.toISOString(),
       highestAlert: highest?.severity ?? null,
+      lastSeverity,
+      zzzs: patient.zzzs,
+      sideEffects: patient.sideEffects,
+      timeline: patient.timeline,
+      nutrition: patient.nutrition,
+      exercises: patient.exercises,
+      generalRecommendations: patient.generalRecommendations,
+      equipment: patient.equipment,
+      warningSymptoms: patient.warningSymptoms,
+      alarmYellow: patient.alarmYellow,
+      alarmRed: patient.alarmRed,
+      catalogSource: patient.catalogSource,
+      careCustomized: patient.careCustomized,
       plans: patient.plans.map((plan) => ({
         id: plan.id,
         type: plan.type,
         label: plan.label,
         unit: plan.unit,
+        kind: plan.kind,
         frequency: plan.frequency,
+        thresholdL1: plan.thresholdL1,
+        thresholdL2: plan.thresholdL2,
+        thresholdL3: plan.thresholdL3,
+        thresholdLowL1: plan.thresholdLowL1,
+        thresholdLowL2: plan.thresholdLowL2,
+        thresholdLowL3: plan.thresholdLowL3,
+        baseline: plan.baseline,
+        baselineDate: plan.baselineDate?.toISOString() ?? null,
+        customized: plan.customized,
+        greenZone: plan.greenZone,
+        yellowZone: plan.yellowZone,
+        redZone: plan.redZone,
       })),
       measurements: patient.measurements.map((item) => ({
         id: item.id,
         type: item.type,
         value: item.value,
+        valueText: item.valueText,
         note: item.note,
         photoUrl: item.photoUrl,
+        author: item.author,
+        severity: item.severity,
         recordedAt: item.recordedAt.toISOString(),
       })),
       alerts: patient.alerts.map((alert) => ({
@@ -74,6 +114,8 @@ export default async function ZdravnikPage() {
         name: item.name,
         dosage: item.dosage,
         times: item.times,
+        duration: item.duration,
+        note: item.note,
         takenSlots: item.takenSlots,
       })),
       chatMessages: patient.chatMessages.map((item) => ({
@@ -82,17 +124,25 @@ export default async function ZdravnikPage() {
         text: item.text,
         createdAt: item.createdAt.toISOString(),
       })),
-      zzzs: patient.zzzs,
-      sideEffects: patient.sideEffects,
-      timeline: patient.timeline,
-      nutrition: patient.nutrition,
-      exercises: patient.exercises,
+      exerciseAssignments: patient.exerciseAssignments.map((a) => ({
+        id: a.id,
+        exerciseSetId: a.exerciseSetId,
+        startDate: a.startDate,
+        acknowledgedDate: a.acknowledgedDate,
+        exerciseSet: a.exerciseSet,
+      })),
     };
   });
 
   return (
     <Shell userName={`${user.name} · zdravnik`}>
-      <DoctorDashboardLovable patients={serialized} userName={user.name} />
+      <DoctorDashboardLovable
+        patients={serialized}
+        userName={user.name}
+        libraryEntries={libraryEntries}
+        exerciseSets={exerciseSets}
+        standards={standards}
+      />
     </Shell>
   );
 }

@@ -36,6 +36,15 @@ model Patient {
   timeline      String?
   nutrition     String?
   exercises     String?
+  // Priporočila iz kataloga stanj (če je diagnoza v katalogu — glej lib/catalog.ts)
+  generalRecommendations String?
+  equipment              String?
+  warningSymptoms        String?
+  alarmYellow            String?
+  alarmRed               String?
+  catalogSource          String?
+  careCustomized         Boolean   @default(false)
+  procedureDate          DateTime? // datum posega (za izračun začetka vaj)
   createdAt     DateTime  @default(now())
 
   plans        MeasurementPlan[]
@@ -43,16 +52,18 @@ model Patient {
   alerts       Alert[]
   medications  Medication[]
   chatMessages ChatMessage[]
+  exerciseAssignments PatientExerciseSet[]
 }
 
 model MeasurementPlan {
   id          String  @id @default(cuid())
   patientId   String
   patient     Patient @relation(fields: [patientId], references: [id])
-  type        String // POCUTJE | BOLECINA | UTRIP | PRITISK | SLADKOR | KISIK | TEZA | TEMPERATURA | PLJUCNA_KAPACITETA | GIBLJIVOST | SLIKA_RANE
+  type        String // POCUTJE | BOLECINA | UTRIP | PRITISK | SLADKOR | KISIK | TEZA | TEMPERATURA | GIBLJIVOST | SLIKA_RANE | EKG | EDEM | ...
   label       String
   unit        String
   frequency   String // npr. "2x na dan"
+  kind        String  @default("NUMERIC") // NUMERIC | TEXT | PRESSURE | IMAGE | YESNO — kako se vnaša meritev
   thresholdL1 Float?
   thresholdL2 Float?
   thresholdL3 Float?
@@ -77,9 +88,12 @@ model Measurement {
   planId     String?
   plan       MeasurementPlan? @relation(fields: [planId], references: [id])
   type       String
-  value      Float?
+  value      Float? // numerična vrednost (če je kind NUMERIC; pri PRITISK sistolični del)
+  valueText  String? // besedilna vrednost (TEXT/PRESSURE "120/80"/YESNO "Ja"/...)
   note       String?
   photoUrl   String?
+  author     String  @default("PACIENT") // PACIENT | ZDRAVNIK
+  severity   String? // NEOCENJENO | VARNO | NENAVADNO | KRITICNO (ocena zdravnika)
   recordedAt DateTime         @default(now())
 
   alerts Alert[]
@@ -113,10 +127,58 @@ model Medication {
 }
 
 model LibraryEntry {
-  id       String @id @default(cuid())
-  category String // MERITVE | PREHRANA | VAJE | POTEK_OKREVANJA
-  title    String
-  content  String
+  id        String  @id @default(cuid())
+  category  String // MERITVE | PREHRANA | VAJE | POTEK_OKREVANJA
+  title     String
+  content   String
+  url       String? // npr. lokalni PDF /guides/sbng-002.pdf
+  sourceUrl String? // izvirni dokument (npr. sbng.si)
+}
+
+// Sklop vaj / PDF vodič (fizioterapija SB Nova Gorica + po meri zdravnika)
+model ExerciseSet {
+  id           String  @id @default(cuid()) // seed: "sbng-002"…, sicer cuid
+  name         String
+  condition    String  @default("") // za katero stanje je primeren
+  instructions String  @default("")
+  pdfUrl       String?
+  sourceUrl    String?
+  language     String  @default("sl") // sl | sq
+  kind         String  @default("exercise") // exercise | advice | exam
+  pages        Int?
+
+  assignments PatientExerciseSet[]
+}
+
+// Dodelitev sklopa vaj pacientu z datumom začetka (in potrditvijo prejema pri pacientu)
+model PatientExerciseSet {
+  id               String  @id @default(cuid())
+  patientId        String
+  patient          Patient @relation(fields: [patientId], references: [id])
+  exerciseSetId    String
+  exerciseSet      ExerciseSet @relation(fields: [exerciseSetId], references: [id])
+  startDate        String // "YYYY-MM-DD"
+  acknowledgedDate String? // "YYYY-MM-DD" ko pacient potrdi prejem opomnika
+
+  @@unique([patientId, exerciseSetId])
+}
+
+// Standardne meje bolnice na tip meritve (zdravnik jih ureja globalno;
+// če plan ni customized, se uporabijo ti standardi)
+model Standard {
+  id             String  @id @default(cuid())
+  metricType     String  @unique // npr. KISIK, TEMPERATURA
+  label          String
+  unit           String  @default("")
+  thresholdL1    Float?
+  thresholdL2    Float?
+  thresholdL3    Float?
+  thresholdLowL1 Float?
+  thresholdLowL2 Float?
+  thresholdLowL3 Float?
+  greenZone      String?
+  yellowZone     String?
+  redZone        String?
 }
 
 model ChatMessage {

@@ -1,6 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
 const prisma = new PrismaClient();
+const here = dirname(fileURLToPath(import.meta.url));
+// Izpeljano iz lib/catalog.ts (28 stanj + 25 PDF vodičev) — glej AGENTS.md
+const seedCatalog = JSON.parse(readFileSync(join(here, "seed-catalog.json"), "utf8"));
+
+const localDateKey = (d) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 async function main() {
   // Počistimo (vrstni red zaradi tujih ključev)
@@ -8,9 +17,12 @@ async function main() {
   await prisma.alert.deleteMany();
   await prisma.measurement.deleteMany();
   await prisma.medication.deleteMany();
+  await prisma.patientExerciseSet.deleteMany();
   await prisma.measurementPlan.deleteMany();
   await prisma.patient.deleteMany();
   await prisma.libraryEntry.deleteMany();
+  await prisma.exerciseSet.deleteMany();
+  await prisma.standard.deleteMany();
   await prisma.user.deleteMany();
 
   const zdravnik = await prisma.user.create({
@@ -31,92 +43,127 @@ async function main() {
     },
   });
 
+  // --- Sklopi vaj: 25 PDF vodičev fizioterapije SB Nova Gorica (lokalno v public/guides) ---
+  for (const g of seedCatalog.guides) {
+    await prisma.exerciseSet.create({
+      data: {
+        id: g.id,
+        name: g.name,
+        condition: g.condition ?? "",
+        instructions: g.instructions ?? "",
+        pdfUrl: g.pdfUrl,
+        sourceUrl: g.sourceUrl,
+        language: g.language ?? "sl",
+        kind: g.kind ?? "exercise",
+        pages: g.pages ?? null,
+      },
+    });
+  }
+
+  // --- Standardne meje bolnice (globalni standardi za tipe meritev) ---
+  const standards = [
+    { metricType: "KISIK", label: "Nasičenost krvi s kisikom (SpO2)", unit: "%", thresholdLowL1: 95, thresholdLowL2: 94, thresholdLowL3: 90, greenZone: "≥ 95 %", yellowZone: "94 %", redZone: "< 90 %" },
+    { metricType: "TEMPERATURA", label: "Telesna temperatura", unit: "°C", thresholdL1: 37.5, thresholdL2: 37.5, thresholdL3: 38.5, greenZone: "36,0–37,4 °C", yellowZone: "37,5 °C", redZone: "≥ 38,5 °C" },
+    { metricType: "BOLECINA", label: "Bolečina", unit: "/10", thresholdL1: 5, thresholdL2: 5, thresholdL3: 8, greenZone: "0–4", yellowZone: "5–7", redZone: "≥ 8" },
+    { metricType: "UTRIP", label: "Srčni utrip", unit: "ut/min", thresholdL1: 100, thresholdL2: 110, thresholdL3: 140, greenZone: "60–100", yellowZone: "101–110", redZone: "> 140" },
+    { metricType: "PRITISK", label: "Krvni pritisk (sistolični)", unit: "mmHg", thresholdL1: 140, thresholdL2: 160, thresholdL3: 180, greenZone: "< 140", yellowZone: "140–160", redZone: "> 180" },
+    { metricType: "SLADKOR", label: "Sladkor v krvi", unit: "mmol/L", thresholdL1: 10, thresholdL2: 10, thresholdL3: 15, greenZone: "4–10", yellowZone: "10–15", redZone: "> 15" },
+    { metricType: "TEZA", label: "Teža", unit: "kg", greenZone: "stabilna", yellowZone: "+2 kg/teden", redZone: "nenadna sprememba" },
+  ];
+  for (const s of standards) {
+    await prisma.standard.create({ data: s });
+  }
+
+  // --- Demo pacient: stanje iz kataloga (Artroskopija kolena) ---
+  const catalog = seedCatalog.conditions.find((c) => c.condition === "Artroskopija kolena");
+  const dischargeDate = new Date("2026-11-10T00:00:00Z");
+  const procedureDate = localDateKey(dischargeDate); // "2026-11-10"
+
   const patient = await prisma.patient.create({
     data: {
       userId: pacientUser.id,
       status: "AKTIVEN",
-      diagnosis: "Operacija kolena (artroskopija)",
-      dischargeDate: new Date("2026-11-10T00:00:00Z"),
+      diagnosis: catalog.condition,
+      dischargeDate,
+      procedureDate: dischargeDate,
       contactName: "Maja Novak",
       contactPhone: "040 123 456",
+      zzzs: "1234567890",
+      sideEffects: catalog.sideEffects,
+      timeline: catalog.timeline,
+      nutrition: catalog.nutrition,
+      exercises: "",
+      generalRecommendations: catalog.recommendations,
+      equipment: catalog.equipment !== "-" ? catalog.equipment : "",
+      warningSymptoms: catalog.warningSymptoms,
+      alarmYellow: catalog.alarmYellow,
+      alarmRed: catalog.alarmRed,
+      catalogSource: catalog.source,
     },
   });
 
-  const planUtrip = await prisma.measurementPlan.create({
-    data: {
-      patientId: patient.id,
-      type: "UTRIP",
-      label: "Srčni utrip",
-      unit: "ut/min",
-      frequency: "2x na dan",
-      thresholdL1: 100,
-      thresholdL2: 120,
-      thresholdL3: 140,
-    },
-  });
+  // Merilni načrti iz kataloga (POCUTJE, BOLECINA, GIBLJIVOST, SLIKA_RANE)
+  for (const p of catalog.plans) {
+    await prisma.measurementPlan.create({
+      data: {
+        patientId: patient.id,
+        type: p.type,
+        label: p.label,
+        unit: p.unit,
+        kind: p.kind,
+        frequency: p.frequency,
+        yellowZone: p.yellowZone || null,
+        redZone: p.redZone || null,
+        thresholdL2: p.thresholdL2,
+        thresholdL3: p.thresholdL3,
+        thresholdLowL2: p.thresholdLowL2,
+        thresholdLowL3: p.thresholdLowL3,
+      },
+    });
+  }
 
-  await prisma.measurementPlan.create({
-    data: {
-      patientId: patient.id,
-      type: "PRITISK",
-      label: "Krvni pritisk (sistolični)",
-      unit: "mmHg",
-      frequency: "1x na dan",
-      thresholdL1: 140,
-      thresholdL2: 160,
-      thresholdL3: 180,
-    },
-  });
+  // Dodatni načrti (utrip, pritisk, temperatura, kisik) s standardi bolnice
+  const extraTypes = ["UTRIP", "PRITISK", "TEMPERATURA", "KISIK"];
+  let planUtrip = null;
+  for (const type of extraTypes) {
+    const std = standards.find((s) => s.metricType === type);
+    const plan = await prisma.measurementPlan.create({
+      data: {
+        patientId: patient.id,
+        type,
+        label: std.label,
+        unit: std.unit,
+        kind: type === "PRITISK" ? "PRESSURE" : "NUMERIC",
+        frequency: type === "UTRIP" || type === "BOLECINA" ? "2x na dan" : "1x na dan",
+        thresholdL1: std.thresholdL1 ?? null,
+        thresholdL2: std.thresholdL2 ?? null,
+        thresholdL3: std.thresholdL3 ?? null,
+        thresholdLowL1: std.thresholdLowL1 ?? null,
+        thresholdLowL2: std.thresholdLowL2 ?? null,
+        thresholdLowL3: std.thresholdLowL3 ?? null,
+        greenZone: std.greenZone ?? null,
+        yellowZone: std.yellowZone ?? null,
+        redZone: std.redZone ?? null,
+      },
+    });
+    if (type === "UTRIP") planUtrip = plan;
+  }
 
-  await prisma.measurementPlan.create({
-    data: {
-      patientId: patient.id,
-      type: "TEMPERATURA",
-      label: "Telesna temperatura",
-      unit: "°C",
-      frequency: "1x na dan",
-      thresholdL1: 37.5,
-      thresholdL2: 38.5,
-      thresholdL3: 39.5,
-    },
-  });
-
-  await prisma.measurementPlan.create({
-    data: {
-      patientId: patient.id,
-      type: "BOLECINA",
-      label: "Bolečina (lestvica 0–10)",
-      unit: "/10",
-      frequency: "2x na dan",
-      thresholdL1: 5,
-      thresholdL2: 7,
-      thresholdL3: 9,
-    },
-  });
-
-  await prisma.measurementPlan.create({
-    data: {
-      patientId: patient.id,
-      type: "KISIK",
-      label: "Nasičenost krvi s kisikom (SpO2)",
-      unit: "%",
-      frequency: "1x na dan",
-      // Spodnje meje: alarm če je SpO2 POD tem pragom
-      thresholdLowL1: 95,
-      thresholdLowL2: 92,
-      thresholdLowL3: 90,
-    },
-  });
-
-  await prisma.measurementPlan.create({
-    data: {
-      patientId: patient.id,
-      type: "SLIKA_RANE",
-      label: "Slika rane / šiva",
-      unit: "",
-      frequency: "1x na 2 dni",
-    },
-  });
+  // Dodeljeni sklopi vaj iz kataloga z izračunanim začetnim datumom (1-3 dni po posegu)
+  const startOffsets = { "1. dan": [1, 1], "1-3 dni": [1, 3], "1-7 dni": [1, 7], "24-48h": [1, 2], "po porodu": [0, 0] };
+  const [oy, om, od] = procedureDate.split("-").map(Number);
+  const [o1, o2] = startOffsets[catalog.startGuidance] ?? [null, null];
+  const startDate =
+    catalog.startGuidance === "takoj"
+      ? localDateKey(new Date())
+      : o1 != null
+        ? localDateKey(new Date(oy, om - 1, od + Math.floor((o1 + o2) / 2)))
+        : "";
+  for (const setId of catalog.exerciseSetIds) {
+    await prisma.patientExerciseSet.create({
+      data: { patientId: patient.id, exerciseSetId: setId, startDate },
+    });
+  }
 
   // Normalne meritve
   await prisma.measurement.create({
@@ -129,7 +176,7 @@ async function main() {
     },
   });
 
-  // Meritve čez mejo L2 → sproži demo alarm
+  // Meritev čez mejo L2 → sproži demo alarm
   const sporocilna = await prisma.measurement.create({
     data: {
       patientId: patient.id,
@@ -220,6 +267,10 @@ async function main() {
   console.log("Seed končan:", {
     zdravnik: zdravnik.email,
     pacient: pacientUser.email,
+    exerciseSets: seedCatalog.guides.length,
+    standards: standards.length,
+    catalogCondition: catalog.condition,
+    exerciseStartDate: startDate,
   });
 }
 

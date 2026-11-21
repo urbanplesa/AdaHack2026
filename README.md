@@ -74,6 +74,16 @@ V primeru nevnašnaja podatkov se sprva obvesti kontaktno osebo, kasneje še zdr
 
 Ko zdravnik oceni (ali po vnaprej določenem obdobju brez nesprejemljivih meritev), da je pacient zdrav ali se okrevanje ne more poslabšati, se nadzor zaključi, pacient pa ima dostop do knjižnjice še 30 dni.
 
+## Kaj je implementirano
+
+- Prijava po vlogah (pacient / zdravnik), seja prek httpOnly piškočka.
+- **Katalog 28 stanj** (izvorni projekt `lovable/`): ob dodajanju pacienta zdravnik izbere stanje → samodejno se nastavijo merilni načrti z mejami iz kataloga (npr. `SpO2<90` → L3), priporočila za okrevanje (potek, prehrana, opozorilni simptomi, alarmi, oprema) in **sklopi vaj** z izračunanim datumom začetka.
+- **25 PDF vodičev fizioterapije SB Nova Gorica** (lokalno v `public/guides/`, z izvirnim virom) — v knjižnici in v pacientovem načrtu; opomnik »Čas je za začetek vaj« s potrditvijo prejema.
+- Meritve po vrsti vnosa: število, besedilo, pritisk `120/80`, da/ne + opis, slika (rana/EKG); zdravnik lahko vnaša svoje meritve z oceno (varno/nenavadno/kritično).
+- Alarm logika L1/L2/L3 (zgornje in spodnje meje) + SOS + alarmi ob izostanku vnosa; zdravnik potrjuje alarme in pripravlja opomnike (e-pošta).
+- Standardne meje bolnice na tip meritve (ureja zdravnik), izhodišča pred odpustom (»podatki iz bolnišnice«), koledar zdravil z odkljukavanjem terminov.
+- Knjižnjica znanj (urejanje samo zdravnik) in **AI asistent** (OpenAI-compatible endpoint iz `.env`, kontekst = načrti + meritve + alarmi + knjižnjica + vaje pacienta).
+
 ## Razvoj
 
 Tehnična dokumentacija, zagon in konvencije so v [`AGENTS.md`](AGENTS.md).

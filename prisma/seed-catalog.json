@@ -1,0 +1,3186 @@
+{
+  "generatedAt": "2026-11-21T22:34:14.081Z",
+  "conditions": [
+    {
+      "condition": "Srčni infarkt/angina",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE"
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "RR>160/100",
+          "redZone": "",
+          "thresholdL2": 160,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "SpO2<90",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": 90
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "RR, oksimeter, tehtnica",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "utrujenost",
+      "timeline": "3-6 mesecev",
+      "recommendations": "rehabilitacija, hoja",
+      "warningSymptoms": "več zasoplosti",
+      "alarmYellow": "RR>160/100",
+      "alarmRed": "bolečina v prsih, SpO2<90",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Srčno popuščanje",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE"
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "EDEM",
+          "label": "Edemi / otekanje",
+          "unit": "",
+          "kind": "TEXT"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "SpO2<90",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": 90
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "EDEM",
+          "label": "Edemi / otekanje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "RR, oksimeter, tehtnica",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "utrujenost",
+      "timeline": "trajno spremljanje",
+      "recommendations": "dnevno tehtanje",
+      "warningSymptoms": "več edemov",
+      "alarmYellow": "+2kg/teden",
+      "alarmRed": "SpO2<90",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Aritmije",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "EKG",
+          "label": "EKG",
+          "unit": "",
+          "kind": "IMAGE"
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "HR>110",
+          "redZone": "",
+          "thresholdL2": 110,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "EKG",
+          "label": "EKG",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "RR, EKG",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "palpitacije",
+      "timeline": "tedni-meseci",
+      "recommendations": "redno merjenje pulza",
+      "warningSymptoms": "vrtoglavica",
+      "alarmYellow": "HR>110",
+      "alarmRed": "izguba zavesti",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Možganska kap",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE"
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "RR, oksimeter",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006",
+        "sbng-011",
+        "sbng-012",
+        "sbng-015"
+      ],
+      "startGuidance": "24-48h",
+      "sideEffects": "utrujenost",
+      "timeline": "3-24 mesecev",
+      "recommendations": "fizio+logoped",
+      "warningSymptoms": "nov nevrološki izpad",
+      "alarmYellow": "slabšanje govora",
+      "alarmRed": "sum nove kapi",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "KOPB",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "RESP_FREKVENCA",
+          "label": "Frekvenca dihanja",
+          "unit": "vdihov/min",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KASELJ",
+          "label": "Kašelj",
+          "unit": "",
+          "kind": "YESNO"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "SpO2<94",
+          "redZone": "SpO2<90",
+          "thresholdL2": null,
+          "thresholdLowL2": 94,
+          "thresholdL3": null,
+          "thresholdLowL3": 90
+        },
+        {
+          "type": "RESP_FREKVENCA",
+          "label": "Frekvenca dihanja",
+          "unit": "vdihov/min",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KASELJ",
+          "label": "Kašelj",
+          "unit": "",
+          "kind": "YESNO",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "oksimeter",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "kašelj",
+      "timeline": "2-8 tednov",
+      "recommendations": "prenehanje kajenja",
+      "warningSymptoms": "večja zasoplost",
+      "alarmYellow": "SpO2<94",
+      "alarmRed": "SpO2<90",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Pljučnica",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE"
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "37.5+",
+          "redZone": "38.5+",
+          "thresholdL2": 37.5,
+          "thresholdLowL2": null,
+          "thresholdL3": 38.5,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "termometer, oksimeter",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "kašelj",
+      "timeline": "2-8 tednov",
+      "recommendations": "počitek in hoja",
+      "warningSymptoms": "vročina",
+      "alarmYellow": "37.5+",
+      "alarmRed": "38.5+",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Astma",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "oksimeter",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "kašelj",
+      "timeline": "spremenljivo",
+      "recommendations": "redno inhaliranje",
+      "warningSymptoms": "več inhalatorja",
+      "alarmYellow": "nižji peakflow",
+      "alarmRed": "hud napad",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "COVID/postCOVID",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "SpO2<94",
+          "redZone": "SpO2<90",
+          "thresholdL2": null,
+          "thresholdLowL2": 94,
+          "thresholdL3": null,
+          "thresholdLowL3": 90
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "oksimeter",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "utrujenost",
+      "timeline": "2 tedna-12 mesecev",
+      "recommendations": "postopna aktivnost",
+      "warningSymptoms": "huda zasoplost",
+      "alarmYellow": "SpO2<94",
+      "alarmRed": "SpO2<90",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Rak dojke",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "tehtnica",
+      "exerciseSetIds": [
+        "sbng-010",
+        "sbng-011",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "po navodilu kirurga",
+      "sideEffects": "zategovanje",
+      "timeline": "6 tednov-12 mesecev",
+      "recommendations": "preprečevanje limfedema",
+      "warningSymptoms": "rdečina rane",
+      "alarmYellow": "večji limfedem",
+      "alarmRed": "okužba",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Drugi raki po operaciji",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "38.5+",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": 38.5,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "tehtnica, termometer",
+      "exerciseSetIds": [
+        "sbng-014",
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "1-7 dni",
+      "sideEffects": "utrujenost",
+      "timeline": "1-6 mesecev",
+      "recommendations": "onkološke kontrole",
+      "warningSymptoms": "vročina",
+      "alarmYellow": "izguba teže",
+      "alarmRed": "38.5+",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Operacija trebuha",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        },
+        {
+          "type": "BLATO",
+          "label": "Blato",
+          "unit": "",
+          "kind": "TEXT"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "37.5+",
+          "redZone": "38.5+",
+          "thresholdL2": 37.5,
+          "thresholdLowL2": null,
+          "thresholdL3": 38.5,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BLATO",
+          "label": "Blato",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "termometer",
+      "exerciseSetIds": [
+        "sbng-014",
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "1-3 dni",
+      "sideEffects": "bolečina",
+      "timeline": "4-12 tednov",
+      "recommendations": "nega rane",
+      "warningSymptoms": "izcedek",
+      "alarmYellow": "37.5+",
+      "alarmRed": "38.5+",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Menjava kolka",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "bolečina>5",
+          "redZone": "",
+          "thresholdL2": 5,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "pedometer",
+      "exerciseSetIds": [
+        "sbng-020",
+        "sbng-026",
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "1. dan",
+      "sideEffects": "otekanje",
+      "timeline": "3-12 mesecev",
+      "recommendations": "preprečevanje padcev",
+      "warningSymptoms": "nezmožnost hoje",
+      "alarmYellow": "bolečina>5",
+      "alarmRed": "38.5+",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Osteosinteza kolka",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "bolečina>5",
+          "redZone": "",
+          "thresholdL2": 5,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "pedometer",
+      "exerciseSetIds": [
+        "sbng-027",
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "1. dan",
+      "sideEffects": "otekanje",
+      "timeline": "3-12 mesecev",
+      "recommendations": "hoja z oporo",
+      "warningSymptoms": "večja bolečina",
+      "alarmYellow": "bolečina>5",
+      "alarmRed": "neobremenljivost",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Menjava kolena",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "EDEM",
+          "label": "Edemi / otekanje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "bolečina>5",
+          "redZone": "",
+          "thresholdL2": 5,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "EDEM",
+          "label": "Edemi / otekanje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "pedometer",
+      "exerciseSetIds": [
+        "sbng-021",
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "1. dan",
+      "sideEffects": "otekanje",
+      "timeline": "3-12 mesecev",
+      "recommendations": "vsakodnevne vaje",
+      "warningSymptoms": "večja bolečina",
+      "alarmYellow": "bolečina>5",
+      "alarmRed": "38.5+",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Artroskopija kolena",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "-",
+      "exerciseSetIds": [
+        "sbng-002",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "1-3 dni",
+      "sideEffects": "otekanje",
+      "timeline": "2-8 tednov",
+      "recommendations": "hlajenje",
+      "warningSymptoms": "večja oteklina",
+      "alarmYellow": "otekanje",
+      "alarmRed": "okužba",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "ACL",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "-",
+      "exerciseSetIds": [
+        "sbng-003",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "po programu",
+      "sideEffects": "togost",
+      "timeline": "6-12 mesecev",
+      "recommendations": "rehabilitacija",
+      "warningSymptoms": "nestabilnost",
+      "alarmYellow": "otekanje",
+      "alarmRed": "okužba",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Poškodba gležnja",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "EDEM",
+          "label": "Edemi / otekanje",
+          "unit": "",
+          "kind": "TEXT"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "EDEM",
+          "label": "Edemi / otekanje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "-",
+      "exerciseSetIds": [
+        "sbng-023",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "1-7 dni",
+      "sideEffects": "oteklina",
+      "timeline": "4-12 tednov",
+      "recommendations": "dvig noge",
+      "warningSymptoms": "večja bolečina",
+      "alarmYellow": "oteklina",
+      "alarmRed": "nezmožnost obremenitve",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Poškodba vratne hrbtenice",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "GIBLJIVOST",
+          "label": "Gibljivost",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "-",
+      "exerciseSetIds": [
+        "sbng-024",
+        "sbng-012",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "po navodilu",
+      "sideEffects": "togost",
+      "timeline": "6-12 tednov",
+      "recommendations": "pravilna drža",
+      "warningSymptoms": "slabost rok",
+      "alarmYellow": "več mravljincev",
+      "alarmRed": "izpad moči",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Poškodba prsne/ledvene hrbtenice",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "-",
+      "exerciseSetIds": [
+        "sbng-025",
+        "sbng-007",
+        "sbng-008",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "po navodilu",
+      "sideEffects": "okorelost",
+      "timeline": "6 tednov-12 mesecev",
+      "recommendations": "fizioterapija",
+      "warningSymptoms": "motnje občutkov",
+      "alarmYellow": "več bolečin",
+      "alarmRed": "izguba funkcije",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Degenerativna hrbtenica",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "-",
+      "exerciseSetIds": [
+        "sbng-007",
+        "sbng-008",
+        "sbng-012",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "kronična bolečina",
+      "timeline": "dolgoročno",
+      "recommendations": "redna vadba",
+      "warningSymptoms": "poslabšanje",
+      "alarmYellow": "več bolečin",
+      "alarmRed": "nevrološki izpad",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Operacija rame",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "bolečina>5",
+          "redZone": "",
+          "thresholdL2": 5,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "-",
+      "exerciseSetIds": [
+        "sbng-011",
+        "sbng-022",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "po navodilu",
+      "sideEffects": "togost",
+      "timeline": "3-6 mesecev",
+      "recommendations": "redno izvajanje vaj",
+      "warningSymptoms": "večja bolečina",
+      "alarmYellow": "bolečina>5",
+      "alarmRed": "okužba",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Revmatološke bolezni",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "OKORELOST",
+          "label": "Okorelost",
+          "unit": "",
+          "kind": "TEXT"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "OKORELOST",
+          "label": "Okorelost",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "-",
+      "exerciseSetIds": [
+        "sbng-011",
+        "sbng-012",
+        "sbng-007",
+        "sbng-008",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "okorelost",
+      "timeline": "kronično",
+      "recommendations": "redna aktivnost",
+      "warningSymptoms": "zagon bolezni",
+      "alarmYellow": "več oteklin",
+      "alarmRed": "hud zagon",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Globoka venska tromboza",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "oksimeter",
+      "exerciseSetIds": [
+        "sbng-015",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "oteklina",
+      "timeline": "3-6 mesecev",
+      "recommendations": "kompresijske nogavice",
+      "warningSymptoms": "večja oteklina",
+      "alarmYellow": "večji obseg",
+      "alarmRed": "zasoplost",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Nosečnost in porod",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE"
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "KRVITEV",
+          "label": "Krvavitev",
+          "unit": "",
+          "kind": "YESNO"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "RR>140/90",
+          "redZone": "",
+          "thresholdL2": 140,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KRVITEV",
+          "label": "Krvavitev",
+          "unit": "",
+          "kind": "YESNO",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "RR merilec",
+      "exerciseSetIds": [
+        "sbng-016",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "po porodu",
+      "sideEffects": "utrujenost",
+      "timeline": "6 tednov",
+      "recommendations": "spremljanje krvavitve",
+      "warningSymptoms": "obilna krvavitev",
+      "alarmYellow": "RR>140/90",
+      "alarmRed": "obilna krvavitev",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Carski rez",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE"
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLIKA_RANE",
+          "label": "Slika rane / šiva",
+          "unit": "",
+          "kind": "IMAGE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "37.5+",
+          "redZone": "38.5+",
+          "thresholdL2": 37.5,
+          "thresholdLowL2": null,
+          "thresholdL3": 38.5,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "termometer",
+      "exerciseSetIds": [
+        "sbng-018",
+        "sbng-016",
+        "sbng-005",
+        "sbng-006"
+      ],
+      "startGuidance": "1-3 dni",
+      "sideEffects": "bolečina reza",
+      "timeline": "6-12 tednov",
+      "recommendations": "nega rane",
+      "warningSymptoms": "izcedek",
+      "alarmYellow": "37.5+",
+      "alarmRed": "38.5+",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Sladkorna bolezen",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "SLADKOR",
+          "label": "Sladkor v krvi",
+          "unit": "mmol/L",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE"
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "SLADKOR",
+          "label": "Sladkor v krvi",
+          "unit": "mmol/L",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "glukoza>10",
+          "redZone": "glukoza>15",
+          "thresholdL2": 10,
+          "thresholdLowL2": null,
+          "thresholdL3": 15,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "glukometer",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "nihanje energije",
+      "timeline": "trajno",
+      "recommendations": "kontrola glukoze",
+      "warningSymptoms": "hipoglikemija",
+      "alarmYellow": "glukoza>10",
+      "alarmRed": "glukoza>15",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Okužbe/sepse po odpustu",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE"
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEMPERATURA",
+          "label": "Telesna temperatura",
+          "unit": "°C",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "37.5+",
+          "redZone": "38.5+",
+          "thresholdL2": 37.5,
+          "thresholdLowL2": null,
+          "thresholdL3": 38.5,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "KISIK",
+          "label": "Nasičenost krvi s kisikom (SpO2)",
+          "unit": "%",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "termometer, oksimeter",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "utrujenost",
+      "timeline": "2-12 tednov",
+      "recommendations": "kontrole",
+      "warningSymptoms": "vročina",
+      "alarmYellow": "37.5+",
+      "alarmRed": "38.5+",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    },
+    {
+      "condition": "Krhki starejši",
+      "metrics": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT"
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE"
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC"
+        },
+        {
+          "type": "PADCI",
+          "label": "Padci",
+          "unit": "",
+          "kind": "YESNO"
+        }
+      ],
+      "plans": [
+        {
+          "type": "POCUTJE",
+          "label": "Počutje",
+          "unit": "",
+          "kind": "TEXT",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "BOLECINA",
+          "label": "Bolečina",
+          "unit": "/10",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PRITISK",
+          "label": "Krvni pritisk",
+          "unit": "mmHg",
+          "kind": "PRESSURE",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "UTRIP",
+          "label": "Povprečen utrip",
+          "unit": "ut/min",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "TEZA",
+          "label": "Teža",
+          "unit": "kg",
+          "kind": "NUMERIC",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        },
+        {
+          "type": "PADCI",
+          "label": "Padci",
+          "unit": "",
+          "kind": "YESNO",
+          "frequency": "Po navodilu zdravnika",
+          "yellowZone": "",
+          "redZone": "",
+          "thresholdL2": null,
+          "thresholdLowL2": null,
+          "thresholdL3": null,
+          "thresholdLowL3": null
+        }
+      ],
+      "equipment": "RR, tehtnica",
+      "exerciseSetIds": [
+        "sbng-005",
+        "sbng-006",
+        "sbng-015"
+      ],
+      "startGuidance": "takoj",
+      "sideEffects": "šibkost",
+      "timeline": "1-12 mesecev",
+      "recommendations": "preprečevanje padcev",
+      "warningSymptoms": "pogosti padci",
+      "alarmYellow": "izguba teže",
+      "alarmRed": "ponovni padec",
+      "source": "Razsirjen_katalog_28_stanj.xlsx"
+    }
+  ],
+  "guides": [
+    {
+      "id": "sbng-002",
+      "name": "Vaje po artroskopiji kolena",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5149284315471216_np-fth-002-vaje-po-artroskopiji-kolena-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 1,
+      "pdfUrl": "/guides/sbng-002.pdf"
+    },
+    {
+      "id": "sbng-003",
+      "name": "Vaje po rekonstrukciji sprednje križne vezi",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5590410565822700_np-fth-003-vaje-po-rekonstruciji-sprednje-krizne-vezi-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-003.pdf"
+    },
+    {
+      "id": "sbng-004",
+      "name": "Priporočila za obutev pri rehabilitaciji",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/3279555638610861_np-fth-004-priporocila-za-obutev-pri-rehabilitaciji-v1.pdf",
+      "language": "sl",
+      "kind": "advice",
+      "pages": 1,
+      "pdfUrl": "/guides/sbng-004.pdf"
+    },
+    {
+      "id": "sbng-005",
+      "name": "Dihalne vaje in splošna priporočila za pljučne bolnike",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5592066230502539_np-fth-005-dihalne-vaje-in-splosna-priporocila-za-pljucne-bolnike-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 3,
+      "pdfUrl": "/guides/sbng-005.pdf"
+    },
+    {
+      "id": "sbng-006",
+      "name": "Dihalne vaje",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5594471239660846_np-fth-006-dihalne-vaje-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 1,
+      "pdfUrl": "/guides/sbng-006.pdf"
+    },
+    {
+      "id": "sbng-007",
+      "name": "Raztezne vaje za ledveno hrbtenico",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5154491552269011_np-fth-007-raztezne-vaje-za-ledveno-hrbtenico-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 1,
+      "pdfUrl": "/guides/sbng-007.pdf"
+    },
+    {
+      "id": "sbng-008",
+      "name": "Vaje za ledveno hrbtenico",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5154680519681799_np-fth-008-vaje-za-ledveno-hrbtenico-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 1,
+      "pdfUrl": "/guides/sbng-008.pdf"
+    },
+    {
+      "id": "sbng-010",
+      "name": "Vaje po operaciji raka na dojki",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5595556863926541_np-fth-010-vaje-po-operaciji-raka-na-dojki-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 1,
+      "pdfUrl": "/guides/sbng-010.pdf"
+    },
+    {
+      "id": "sbng-011",
+      "name": "Vaje za ramo",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5595581329083682_np-fth-011-vaje-za-ramo-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-011.pdf"
+    },
+    {
+      "id": "sbng-012",
+      "name": "Vaje za vratno hrbtenico in ramenski obroč",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5154767308325819_np-fth-012-vaje-za-vratno-hrbtenico-in-ramenski-obroc-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 1,
+      "pdfUrl": "/guides/sbng-012.pdf"
+    },
+    {
+      "id": "sbng-013",
+      "name": "Metaholinski test",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/3284542456479417_np-fth-013-metaholinski-test-v3.pdf",
+      "language": "sl",
+      "kind": "exam",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-013.pdf"
+    },
+    {
+      "id": "sbng-014",
+      "name": "Vaje po operaciji v trebušni votlini",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5154833755387617_np-fth-014-vaje-po-operaciji-v-trebusni-votlini-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 1,
+      "pdfUrl": "/guides/sbng-014.pdf"
+    },
+    {
+      "id": "sbng-015",
+      "name": "Izboljšamo venski pretok",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5595701658522720_np-fth-015-izboljsajmo-venski-pretok-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-015.pdf"
+    },
+    {
+      "id": "sbng-016",
+      "name": "Poporodna vadba",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5154914218219279_np-fth-016-poporodna-vadba-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-016.pdf"
+    },
+    {
+      "id": "sbng-017",
+      "name": "Poporodna vadba albanski jezik",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/3284669909542345_np-fth-017-poporodna-vadba_albanski-jezik-v1.pdf",
+      "language": "sq",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-017.pdf"
+    },
+    {
+      "id": "sbng-018",
+      "name": "Fizioterapija in fizično okrevanje po carskem rezu",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5595967238634482_np-fth-018-fizioterapija-in-fizicno-okrevanje-po-carskem-rezu-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-018.pdf"
+    },
+    {
+      "id": "sbng-019",
+      "name": "Fizioterapija in fizično okrevanje po carskem rezu (albanski jezik)",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/3284889347018413_np-fth-019-fizioterapija-in-fizicno-okrevanje-po-carskem-rezu-albanski-jezik-v1.pdf",
+      "language": "sq",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-019.pdf"
+    },
+    {
+      "id": "sbng-020",
+      "name": "Splošna navodila zgodnje rehabilitacije in vaje po menjavi kolčnega sklepa",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/10415425438335635_np-fth-020-splosna-navodila-zgodnje-rehabilitacije-in-vaje-po-menjavi-kolcnega-sklepa-v2.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 4,
+      "pdfUrl": "/guides/sbng-020.pdf"
+    },
+    {
+      "id": "sbng-021",
+      "name": "Splošna navodila zgodnje rehabilitacije in vaje po menjavi kolenskega sklepa",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/10248169339642043_np-fth-021-splosna-navodila-zgodnje-rehabilitacije-in-vaje-po-menjavi-kolenskega-sklepa-v2.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 4,
+      "pdfUrl": "/guides/sbng-021.pdf"
+    },
+    {
+      "id": "sbng-022",
+      "name": "Zgibanka opornica za ramo",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/3520564748323982_np-fth-022-zgibanka-opornica-za-ramo-v1.pdf",
+      "language": "sl",
+      "kind": "advice",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-022.pdf"
+    },
+    {
+      "id": "sbng-023",
+      "name": "Zgibanka vaje za gleženj",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/3520579939374550_np-fth-023-zgibanka-vaje-za-glezenj-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-023.pdf"
+    },
+    {
+      "id": "sbng-024",
+      "name": "Zgibanka vaje po poškodbi vratne hrbtenice",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/3520590741694406_np-fth-024-zgibanka-vaje-po-poskodbi-vratne-hrbtenice-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-024.pdf"
+    },
+    {
+      "id": "sbng-027",
+      "name": "Zgibanka vaje in navodila po operaciji kolčnega sklepa - osteosinteza",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/3520616861203556_np-fth-027-zgibanka-vaje-in-navodila-po-operaciji-kolcnega-sklepa---osteosinteza-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-027.pdf"
+    },
+    {
+      "id": "sbng-025",
+      "name": "Zgibanka vaje po sveži poškodbi prsne in/ali ledvene hrbtenice",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/5831699140188561_np-fth-025-zgibanka-vaje-po-svezi-poskodbi-prsne-in_ali-ledvene-hrbtenice-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-025.pdf"
+    },
+    {
+      "id": "sbng-026",
+      "name": "Zgibanka vaje in navodila po operaciji kolčnega sklepa - kolčna endoproteza",
+      "condition": "",
+      "instructions": "",
+      "sourceUrl": "https://www.sbng.si/file/3520609612550199_np-fth-026-zgibanka-vaje-in-navodila-po-operaciji-kolcnega-sklepa---kolcna-endoproteza-v1.pdf",
+      "language": "sl",
+      "kind": "exercise",
+      "pages": 2,
+      "pdfUrl": "/guides/sbng-026.pdf"
+    }
+  ],
+  "physiotherapySource": "https://www.sbng.si/sl/dejavnosti/skupne-medicinske-sluzbe/fizioterapija/"
+}

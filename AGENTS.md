@@ -45,11 +45,20 @@ app/
   api/
     auth/login/route.ts        # POST {email,password} → httpOnly piškotek "session"=userId
     auth/logout/route.ts       # POST → počisti sejo, redirect na /login
-    measurements/route.ts      # GET seznam; POST vnos meritve + alarm logika (meje + dedup)
-    patients/route.ts          # GET seznam / POST nov pacient s plani in zdravili (ZDRAVNIK)
+    measurements/route.ts      # GET seznam; POST vnos meritve (glede na plan.kind) + alarm logika; ZDRAVNIK lahko vnaša s patientId + severity
+    patients/route.ts          # GET seznam / POST nov pacient (če je diagnoza v katalogu, se načrti+priporočila+vaje nastavijo samodejno); ZDRAVNIK
+    patients/[id]/route.ts     # PATCH — podatki pacienta, sinhronizacija načrtov (baseline/meje), zdravila, dodelitve vaj; ZDRAVNIK
+    patients/[id]/exercises/route.ts # GET/POST/DELETE dodelitve sklopov vaj (startDate "YYYY-MM-DD")
+    exercise-sets/route.ts     # GET vsi sklopi / POST nov sklop (ZDRAVNIK)
+    exercise-sets/[id]/route.ts # DELETE sklop (ZDRAVNIK)
+    exercise-assignments/[id]/acknowledge/route.ts # POST — pacient potrdi opomnik za vaje
+    catalog/route.ts           # GET katalog 28 stanj + 25 PDF vodičev (za izbiro pri dodajanju pacienta)
+    library/route.ts           # GET knjižnjica / POST nov vnos (ZDRAVNIK)
+    library/[id]/route.ts      # PATCH/DELETE vnos knjižnjice (ZDRAVNIK)
+    standards/route.ts         # GET standardne meje / POST upsert po metricType (ZDRAVNIK)
     alerts/route.ts            # GET seznam; POST {action:"sos"} | {action:"acknowledge",alertId}
     chat/route.ts              # GET/POST sporočila (pacient / zdravnik s patientId)
-    assistant/route.ts         # GET/POST pogovor z AI asistentom (samo PACIENT; bere knjižnico + meritve pacienta)
+    assistant/route.ts         # GET/POST pogovor z AI asistentom (samo PACIENT; bere knjižnico + meritve + načrte + vaje)
     medications/route.ts       # POST {medicationId,time:"HH:MM"} — preklopi današnji odmerek
     upload/route.ts            # POST multipart "file" → public/uploads/, vrne {url:"/uploads/..."}
     cron/missed-checkins/route.ts # POST — alarmi IZOSTANEK_VNOSA (x-cron-secret ali seja ZDRAVNIK)
@@ -58,17 +67,25 @@ lib/
   auth.ts                 # getSessionUser() — prebere piškotek, vrne User
   http.ts                 # readJson() (varno branje JSON) in jsonError()
   thresholds.ts           # evaluateThresholds() — zgornje IN spodnje meje plana
-  assistant.ts            # AI asistent: konfiguracija LLM iz .env, kontekst (knjižnica + meritve + načrti + alarmi), klic, fallback
+  assistant.ts            # AI asistent: konfiguracija LLM iz .env, kontekst, klic, fallback
+  catalog.ts              # katalog 28 stanj (lib/catalog/conditions.json) + PDF vodiči (lib/catalog/guides.json): preslikava v tipe planov, alarmne meje, okno začetka vaj
+  catalog/conditions.json # surovi katalog stanj (iz lovable projekta)
+  catalog/guides.json     # 25 PDF vodičev fizioterapije SB Nova Gorica (pdfUrl = lokalno /guides/<id>.pdf)
 prisma/
   schema.prisma           # podatkovni model
-  seed.mjs                # demo podatki
-public/uploads/           # naložene slike ran (lokalno; kasneje object storage)
+  seed.mjs                # demo podatki (vklj. 25 sklopov vaj, 7 standardov, katalogov demo-pacient)
+  seed-catalog.json       # izpeljan iz lib/catalog.ts (generiraj prek node --experimental-strip-types); seed.mjs ga bere
+  migrations/
+public/
+  guides/*.pdf            # 25 lokalnih PDF vodičev (preneseno iz sbng.si; izvorni URL je v sourceUrl)
+  uploads/                # naložene slike ran (lokalno; kasneje object storage)
 devenv.nix                # dev okolje (node, env spremenljivke)
+lovable/                  # referenčni UI projekt (izvor funkcij); izključen iz builda (tsconfig exclude), NE briši brez soglasja
 ```
 
 ## Podatkovni model (Prisma)
 
-`User` → `Patient` → `MeasurementPlan`, `Measurement`, `Alert`, `Medication`, `ChatMessage`; ločena `LibraryEntry` (knjižnjica).
+`User` → `Patient` → `MeasurementPlan`, `Measurement`, `Alert`, `Medication`, `ChatMessage`, `PatientExerciseSet`; ločene `LibraryEntry` (knjižnjica), `ExerciseSet` (sklopi vaj/PDF vodiči), `Standard` (standardne meje bolnice).
 
 **SQLite ne podpira `enum`** — zato so statusi navadni `String` z dogovorjenimi vrednostmi:
 
@@ -76,9 +93,22 @@ devenv.nix                # dev okolje (node, env spremenljivke)
 - `Patient.status`: `AKTIVEN | V_BOLNICI | ZAKLJUCEN`
 - `Alert.severity`: `L1 | L2 | L3 | SOS | IZOSTANEK_VNOSA`
 - `Alert.status`: `ODPRT | POTRJEN`
-- `MeasurementPlan.type` / `Measurement.type`: `POCUTJE | BOLECINA | UTRIP | PRITISK | SLADKOR | KISIK | TEZA | TEMPERATURA | PLJUCNA_KAPACITETA | GIBLJIVOST | SLIKA_RANE`
+- `MeasurementPlan.type` / `Measurement.type`: `POCUTJE | BOLECINA | UTRIP | PRITISK | SLADKOR | KISIK | TEZA | TEMPERATURA | PLJUCNA_KAPACITETA | GIBLJIVOST | RESP_FREKVENCA | EDEM | KASELJ | BLATO | OKORELOST | KRVITEV | PADCI | EKG | SLIKA_RANE | …` (po katalogu)
+- `MeasurementPlan.kind`: `NUMERIC | TEXT | PRESSURE | IMAGE | YESNO` — določa obrazec za vnos (`PRITISK` se shrani kot `valueText "120/80"`, numerična vrednost za alarm je sistolični)
+- `Measurement`: poleg `value` še `valueText`, `author` (`PACIENT | ZDRAVNIK`) in `severity` (`NEOCENJENO | VARNO | NENAVADNO | KRITICNO` — ocena zdravnika)
 - `MeasurementPlan` ima poleg `thresholdL1/L2/L3` tudi **spodnje meje** `thresholdLowL1/L2/L3` (npr. SpO2) ter polja `baseline`, `baselineDate`, `customized`, `greenZone`, `yellowZone`, `redZone`
+- `Patient` ima priporočila iz kataloga: `sideEffects`, `timeline`, `nutrition`, `generalRecommendations`, `equipment`, `warningSymptoms`, `alarmYellow`, `alarmRed`, `catalogSource`, `procedureDate`
 - `Medication.times`: JSON array `"HH:MM"`; `Medication.takenSlots`: JSON array opravljenih terminov `"YYYY-MM-DD HH:MM"` (per-čas, lokalni čas)
+- `PatientExerciseSet`: `startDate` in `acknowledgedDate` sta `"YYYY-MM-DD"` (lokalni čas)
+
+## Katalog stanj in sklopi vaj (iz lovable projekta)
+
+- `lib/catalog.ts` bere `lib/catalog/conditions.json` (28 stanj iz `Razsirjen_katalog_28_stanj.xlsx`) in `lib/catalog/guides.json` (25 PDF vodičev SB Nova Gorica; PDF-ji so lokalno v `public/guides/`).
+- `GET /api/catalog` vrne stanja z načrti (meritve + parsane alarmne meje: rumeni alarm kataloga = L2, rdeči = L3, npr. `SpO2<90` → `thresholdLowL3=90`), priporočili in sklopi vaj.
+- `POST /api/patients` z diagnozo, ki sovpada s katalogom (neobčutljivo na velikost črk), samodejno ustvari načrte, priporočila in dodelitve vaj (`catalogApplied: true`); začetni datum vaj se izračuna iz `Začetek vaj` kataloga + `procedureDate` (`takoj` → danes, `1-3 dni` → sredina okna; glej `autoExerciseStartDate`).
+- Če katalog za tip meritve nima alarma, se za načrt uporabijo **standardne meje bolnice** (`Standard`, urejanje prek `POST /api/standards`).
+- Pacient: opomnik "Čas je za začetek vaj" dokler ne potrdi (`POST /api/exercise-assignments/[id]/acknowledge`); v "Moj načrt" so priporočila + sklopi vaj s PDF gumbi.
+- Zdravnik: izbira stanja iz kataloga v modalu »Nov pacient«, dodelitev sklopov vaj z datumom (zavihek »Vaje«), vnos meritev z oceno (»Vpiši meritev«), izhodišča pred odpustom (»Podatki iz bolnišnice« → `PATCH /api/patients/[id]`), opomnik pacientu prek e-pošte (mailto) pri izostanku vnosa ≥ 3 dni, urejanje knjižnjice in standardov.
 
 ## Avtentikacija in vloge
 
@@ -119,7 +149,7 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 
 Vsi novi pacienti, ustvarjeni prek `POST /api/patients`, dobijo **isto privzeto geslo `pacient123`** (konstanta `DEFAULT_PATIENT_PASSWORD` v `lib/auth.ts`).
 
-Seed podatki: pacient Janez Novak (operacija kolena), 6 merilnih planov (utrip, pritisk, temperatura, bolečina, kisik s spodnjimi mejami, slika rane), 2 meritvi (ena čez L2 → demo alarm), 2 zdravili (ena z že odvzetim današnjim terminom), 4 vnosi knjižnjice, 2 chat sporočili.
+Seed podatki: pacient Janez Novak (stanje iz kataloga **Artroskopija kolena** — načrti/priporočila/vaje samodejno iz kataloga), dodatni načrti (utrip, pritisk, temperatura, kisik s standardi bolnice), 2 meritvi (ena čez L2 → demo alarm), 2 zdravili, 4 vnosi knjižnjice, 25 sklopov vaj (PDF), 7 standardov, 2 chat sporočili.
 
 ## Konvencije kode
 
@@ -176,6 +206,32 @@ curl -b /tmp/d.txt -X POST http://localhost:3000/api/cron/missed-checkins
 curl -b /tmp/c.txt http://localhost:3000/api/assistant
 curl -b /tmp/c.txt -X POST http://localhost:3000/api/assistant \
   -H 'Content-Type: application/json' -d '{"text":"Ali grem lahko že na 5 km sprehod?"}'
+# katalog stanj (zdravnik)
+curl -b /tmp/d.txt http://localhost:3000/api/catalog
+# nov pacient iz kataloga (samodejni načrti + priporočila + vaje)
+curl -b /tmp/d.txt -X POST http://localhost:3000/api/patients \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Maja Kovač","diagnosis":"KOPB","email":"maja@test.si","dischargeDate":"2026-11-20"}'
+# meritve po vrsti vnosa (kind plana): pritisk, da/ne, slika, besedilo
+curl -b /tmp/c.txt -X POST http://localhost:3000/api/measurements \
+  -H 'Content-Type: application/json' -d '{"type":"PRITISK","valueText":"160/100"}'
+curl -b /tmp/c.txt -X POST http://localhost:3000/api/measurements \
+  -H 'Content-Type: application/json' -d '{"type":"KASELJ","valueText":"Ja","note":"Boleč kašelj: Ja"}'
+# zdravnik vnese meritev s oceno za pacienta
+curl -b /tmp/d.txt -X POST http://localhost:3000/api/measurements \
+  -H 'Content-Type: application/json' \
+  -d '{"patientId":"<id>","type":"BOLECINA","value":8,"severity":"KRITICNO"}'
+# dodelitev sklopa vaj + potrditev opomnika
+curl -b /tmp/d.txt -X POST http://localhost:3000/api/patients/<id>/exercises \
+  -H 'Content-Type: application/json' -d '{"exerciseSetId":"sbng-006","startDate":"2026-11-25"}'
+curl -b /tmp/c.txt http://localhost:3000/api/patients/<id>/exercises
+curl -b /tmp/c.txt -X POST http://localhost:3000/api/exercise-assignments/<assignmentId>/acknowledge
+# knjižnjica in standardi (samo ZDRAVNIK piše)
+curl -b /tmp/d.txt -X POST http://localhost:3000/api/library \
+  -H 'Content-Type: application/json' -d '{"category":"VAJE","title":"…","content":"…","url":"/guides/sbng-002.pdf"}'
+curl -b /tmp/d.txt http://localhost:3000/api/standards
+curl -b /tmp/d.txt -X POST http://localhost:3000/api/standards \
+  -H 'Content-Type: application/json' -d '{"metricType":"KISIK","thresholdLowL3":90,"redZone":"< 90 %"}'
 ```
 
 (`curl -c /tmp/d.txt ... zdravnik@test.si` prijavi zdravnika za `/tmp/d.txt`)
