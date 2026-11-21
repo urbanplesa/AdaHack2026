@@ -97,6 +97,20 @@ async function main() {
   await prisma.measurementPlan.create({
     data: {
       patientId: patient.id,
+      type: "KISIK",
+      label: "Nasičenost krvi s kisikom (SpO2)",
+      unit: "%",
+      frequency: "1x na dan",
+      // Spodnje meje: alarm če je SpO2 POD tem pragom
+      thresholdLowL1: 95,
+      thresholdLowL2: 92,
+      thresholdLowL3: 90,
+    },
+  });
+
+  await prisma.measurementPlan.create({
+    data: {
+      patientId: patient.id,
       type: "SLIKA_RANE",
       label: "Slika rane / šiva",
       unit: "",
@@ -138,12 +152,14 @@ async function main() {
   });
 
   // Zdravila (mock zVem recepta)
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
   await prisma.medication.create({
     data: {
       patientId: patient.id,
       name: "Ibuprofen",
       dosage: "400 mg",
       times: JSON.stringify(["08:00", "20:00"]),
+      takenSlots: JSON.stringify([`${today} 08:00`]),
     },
   });
   await prisma.medication.create({
@@ -185,7 +201,7 @@ async function main() {
     ],
   });
 
-  // Začetni pogovor z AI asistentom (stub)
+  // Začetni pogovor z AI asistentom (nadaljuje se prek /api/assistant)
   await prisma.chatMessage.createMany({
     data: [
       {

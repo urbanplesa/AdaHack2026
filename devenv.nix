@@ -12,7 +12,7 @@
   # Naložimo .env (DATABASE_URL)
   dotenv.enable = true;
 
-  env.DATABASE_URL = "file:./prisma/dev.db";
+  env.DATABASE_URL = "file:./dev.db";
 
   # Na NixOS Prisma zazna platformo "linux-nixos", uradnih binarnikov zanjo ni (404).
   # Zato prisilimo cilj debian-openssl-3.0.x — binarniki tečejo prek nix-ld

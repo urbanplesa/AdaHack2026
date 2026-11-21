@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --background: #f7fbf9;
+  --foreground: #263e40;
+  --card: #ffffff;
+  --primary: #3f927f;
+  --primary-foreground: #ffffff;
+  --secondary: #edf7f3;
+  --muted: #f1f5f3;
+  --muted-foreground: #718181;
+  --border: #dfe9e5;
+  --warning: #e5ae43;
+  --success: #65ad8e;
+  --destructive: #c95b54;
+  --radius: 1rem;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: Nunito, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+button, input, textarea, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }

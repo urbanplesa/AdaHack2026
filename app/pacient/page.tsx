@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import PatientDashboard from "./PatientDashboard";
+import PatientDashboard from "./PatientDashboardLovable";
+import SosButton from "./SosButton";
+import Shell from "../Shell";
 
 export default async function PacientPage() {
   const user = await getSessionUser();
@@ -24,15 +26,20 @@ export default async function PacientPage() {
   });
 
   return (
-    <PatientDashboard
-      patientName={user.name}
-      diagnosis={patient.diagnosis}
-      dischargeDate={patient.dischargeDate.toISOString()}
-      plans={patient.plans}
-      measurements={patient.measurements}
-      libraryEntries={libraryEntries}
-      medications={patient.medications}
-      chatMessages={patient.chatMessages}
-    />
+    <Shell userName={`${user.name} · pacient`}>
+      <div className="mb-4 flex justify-end">
+        <SosButton />
+      </div>
+      <PatientDashboard
+        patientName={user.name}
+        diagnosis={patient.diagnosis}
+        dischargeDate={patient.dischargeDate?.toISOString() ?? new Date().toISOString()}
+        plans={patient.plans}
+        measurements={patient.measurements}
+        libraryEntries={libraryEntries}
+        medications={patient.medications}
+        chatMessages={patient.chatMessages}
+      />
+    </Shell>
   );
 }

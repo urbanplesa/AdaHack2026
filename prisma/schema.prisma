@@ -26,12 +26,17 @@ model Patient {
   id            String   @id @default(cuid())
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id])
-  status        String   @default("AKTIVEN") // AKTIVEN | V_BOLNICI | ZAKLJUCEN
+  status        String    @default("AKTIVEN") // AKTIVEN | V_BOLNICI | ZAKLJUCEN
   diagnosis     String
-  dischargeDate DateTime
-  contactName   String
-  contactPhone  String
-  createdAt     DateTime @default(now())
+  dischargeDate DateTime?
+  contactName   String?
+  contactPhone  String?
+  zzzs          String?
+  sideEffects   String?
+  timeline      String?
+  nutrition     String?
+  exercises     String?
+  createdAt     DateTime  @default(now())
 
   plans        MeasurementPlan[]
   measurements Measurement[]
@@ -51,6 +56,16 @@ model MeasurementPlan {
   thresholdL1 Float?
   thresholdL2 Float?
   thresholdL3 Float?
+  // Spodnje meje (npr. kisik v krvi) — alarm če je vrednost POD tem pragom
+  thresholdLowL1 Float?
+  thresholdLowL2 Float?
+  thresholdLowL3 Float?
+  baseline      String?
+  baselineDate  DateTime?
+  customized    Boolean @default(false)
+  greenZone     String?
+  yellowZone    String?
+  redZone       String?
 
   measurements Measurement[]
 }
@@ -91,7 +106,10 @@ model Medication {
   name      String
   dosage    String
   times     String // JSON array "HH:MM", npr. ["08:00","20:00"]
-  takenAt   DateTime?
+  duration  String?
+  note      String?
+  // JSON array opravljenih terminov "YYYY-MM-DD HH:MM" (per-čas, ne samo en timestamp)
+  takenSlots String @default("[]")
 }
 
 model LibraryEntry {
@@ -105,7 +123,7 @@ model ChatMessage {
   id        String   @id @default(cuid())
   patientId String
   patient   Patient  @relation(fields: [patientId], references: [id])
-  sender    String // PACIENT | ASISTENT
+  sender    String // PACIENT | ZDRAVNIK | ASISTENT
   text      String
   createdAt DateTime @default(now())
 }
