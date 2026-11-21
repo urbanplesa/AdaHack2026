@@ -1,0 +1,3 @@
+# devenv konfiguracija projekta AdaHack2026
+# Zagon: devenv shell   (vstop v dev okolje)
+#       devenv up      (zagon procesov, če jih dodamo)

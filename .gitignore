@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# lokalna baza in uploadi
+prisma/dev.db
+prisma/dev.db-journal
+public/uploads/*
+!public/uploads/.gitkeep
+
+# devenv
+.devenv/

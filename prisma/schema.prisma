@@ -1,0 +1,111 @@
+generator client {
+  provider      = "prisma-client-js"
+  // Na NixOS prisilimo debian-openssl-3.0.x binarnike (glej devenv.nix)
+  binaryTargets = ["debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite ne podpira enumov, zato uporabljamo String + komentarje.
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String // hackathon: plaintext, samo sintetični podatki
+  name      String
+  role      String // PACIENT | ZDRAVNIK | KONTAKTNA_OSEBA
+  createdAt DateTime @default(now())
+
+  patient Patient?
+}
+
+model Patient {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  status        String   @default("AKTIVEN") // AKTIVEN | V_BOLNICI | ZAKLJUCEN
+  diagnosis     String
+  dischargeDate DateTime
+  contactName   String
+  contactPhone  String
+  createdAt     DateTime @default(now())
+
+  plans        MeasurementPlan[]
+  measurements Measurement[]
+  alerts       Alert[]
+  medications  Medication[]
+  chatMessages ChatMessage[]
+}
+
+model MeasurementPlan {
+  id          String  @id @default(cuid())
+  patientId   String
+  patient     Patient @relation(fields: [patientId], references: [id])
+  type        String // POCUTJE | BOLECINA | UTRIP | PRITISK | SLADKOR | KISIK | TEZA | TEMPERATURA | PLJUCNA_KAPACITETA | GIBLJIVOST | SLIKA_RANE
+  label       String
+  unit        String
+  frequency   String // npr. "2x na dan"
+  thresholdL1 Float?
+  thresholdL2 Float?
+  thresholdL3 Float?
+
+  measurements Measurement[]
+}
+
+model Measurement {
+  id         String           @id @default(cuid())
+  patientId  String
+  patient    Patient          @relation(fields: [patientId], references: [id])
+  planId     String?
+  plan       MeasurementPlan? @relation(fields: [planId], references: [id])
+  type       String
+  value      Float?
+  note       String?
+  photoUrl   String?
+  recordedAt DateTime         @default(now())
+
+  alerts Alert[]
+}
+
+model Alert {
+  id             String       @id @default(cuid())
+  patientId      String
+  patient        Patient      @relation(fields: [patientId], references: [id])
+  measurementId  String?
+  measurement    Measurement? @relation(fields: [measurementId], references: [id])
+  severity       String // L1 | L2 | L3 | SOS | IZOSTANEK_VNOSA
+  status         String       @default("ODPRT") // ODPRT | POTRJEN
+  message        String
+  createdAt      DateTime     @default(now())
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+}
+
+model Medication {
+  id        String    @id @default(cuid())
+  patientId String
+  patient   Patient   @relation(fields: [patientId], references: [id])
+  name      String
+  dosage    String
+  times     String // JSON array "HH:MM", npr. ["08:00","20:00"]
+  takenAt   DateTime?
+}
+
+model LibraryEntry {
+  id       String @id @default(cuid())
+  category String // MERITVE | PREHRANA | VAJE | POTEK_OKREVANJA
+  title    String
+  content  String
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  sender    String // PACIENT | ASISTENT
+  text      String
+  createdAt DateTime @default(now())
+}

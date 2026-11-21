@@ -73,3 +73,19 @@ Iz portala zVem se prodobi recepte za zdravila, ki se dodajo v knjižnico - kdaj
 V primeru nevnašnaja podatkov se sprva obvesti kontaktno osebo, kasneje še zdravnika.
 
 Ko zdravnik oceni (ali po vnaprej določenem obdobju brez nesprejemljivih meritev), da je pacient zdrav ali se okrevanje ne more poslabšati, se nadzor zaključi, pacient pa ima dostop do knjižnjice še 30 dni.
+
+## Razvoj
+
+Tehnična dokumentacija, zagon in konvencije so v [`AGENTS.md`](AGENTS.md).
+
+Hiter zagon (Nix/devenv):
+
+```bash
+devenv shell          # vstop v dev okolje
+npm install
+npm run db:migrate    # če še ni baze
+npm run db:seed       # demo podatki
+npm run dev           # http://localhost:3000
+```
+
+Demo prijavi: `pacient@test.si / pacient123` in `zdravnik@test.si / zdravnik123` (samo sintetični podatki).
