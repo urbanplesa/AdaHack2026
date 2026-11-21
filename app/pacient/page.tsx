@@ -1,18 +1,38 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import PatientDashboard from "./PatientDashboard";
 
 export default async function PacientPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   if (user.role !== "PACIENT") redirect("/zdravnik");
 
+  const patient = await prisma.patient.findUnique({
+    where: { userId: user.id },
+    include: {
+      plans: { orderBy: { label: "asc" } },
+      measurements: { orderBy: { recordedAt: "desc" }, take: 20, include: { plan: true } },
+      medications: true,
+      chatMessages: { orderBy: { createdAt: "asc" } },
+    },
+  });
+  if (!patient) redirect("/login");
+
+  const libraryEntries = await prisma.libraryEntry.findMany({
+    orderBy: [{ category: "asc" }, { title: "asc" }],
+  });
+
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">Pozdravljen, {user.name}</h1>
-      <p className="mt-2 text-gray-600">
-        Pacient UI — v delu: vnos meritev, koledar zdravil, SOS gumb,
-        knjižnjica, AI asistent.
-      </p>
-    </main>
+    <PatientDashboard
+      patientName={user.name}
+      diagnosis={patient.diagnosis}
+      dischargeDate={patient.dischargeDate.toISOString()}
+      plans={patient.plans}
+      measurements={patient.measurements}
+      libraryEntries={libraryEntries}
+      medications={patient.medications}
+      chatMessages={patient.chatMessages}
+    />
   );
 }
