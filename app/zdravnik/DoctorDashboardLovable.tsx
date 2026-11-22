@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import TrendChart from "@/components/TrendChart";
 import { autoExerciseStartDate } from "@/lib/catalog";
+import { ChevronRight } from "lucide-react";
 
 type Plan = {
   id: string; type: string; label: string; unit: string; kind: string; frequency: string;
@@ -73,15 +74,13 @@ export default function DoctorDashboardLovable({ patients, userName, libraryEntr
       {patient && <section className="min-w-0 border-t pt-6 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
         <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-display text-3xl">{patient.name}</h2><p className="mt-1 text-sm text-muted-foreground">{patient.diagnosis}</p></div><span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-primary">{patient.status}</span></div>
         {isOverdue(patient) && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4"><div><p className="text-sm font-bold text-amber-900">{patient.latestActivity ? "Vsaj 3 dni brez novih podatkov" : "Pacient še ni vpisal podatkov"}</p><p className="mt-1 text-xs text-amber-800">Čas je za opomnik pacientu.</p></div><a className="rounded-lg border border-amber-400 bg-white px-4 py-2 text-sm font-bold text-amber-900" href={`mailto:${patient.email}?subject=${encodeURIComponent("Opomnik za vnos podatkov — AdaHack2026")}&body=${encodeURIComponent(`Pozdravljeni, ${patient.name},\n\nprosimo, vnesite ${patient.latestActivity ? "nove" : "prve"} podatke o svojem počutju in meritvah.\n\nLep pozdrav,\n${userName}`)}`}>Pripravi opomnik (e-pošta)</a></div>}
-        <nav className="mt-6 flex gap-1 overflow-x-auto border-b">{([["alerts", "Alarmi"], ["metrics", "Meritve"], ["care", "Okrevanje"], ["exercises", "Vaje"], ["history", "Zgodovina"], ["contacts", "Kontakti"], ["library", "Knjižnjica"], ["standards", "Standardi"]] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setTab(value)} className={`px-3 py-3 text-sm font-bold ${tab === value ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</nav>
+        <nav className="mt-6 flex gap-1 overflow-x-auto border-b">{([["alerts", "Alarmi"], ["metrics", "Meritve"], ["care", "Okrevanje"], ["exercises", "Vaje"], ["contacts", "Kontakti"], ["library", "Knjižnjica"]] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setTab(value)} className={`px-3 py-3 text-sm font-bold ${tab === value ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</nav>
         {tab === "alerts" && <AlertsView patient={patient} />}
-        {tab === "metrics" && <MetricView patient={patient} onEntry={() => setEntryFor(patient)} onHospital={() => setHospitalFor(patient)} />}
+        {tab === "metrics" && <MetricView patient={patient} standards={standards} onEntry={() => setEntryFor(patient)} onHospital={() => setHospitalFor(patient)} />}
         {tab === "care" && <CareView patient={patient} />}
         {tab === "exercises" && <ExercisesView patient={patient} exerciseSets={exerciseSets} />}
-        {tab === "history" && <HistoryView patient={patient} />}
         {tab === "contacts" && <ContactsView patient={patient} />}
         {tab === "library" && <LibraryView entries={libraryEntries} />}
-        {tab === "standards" && <StandardsView standards={standards} />}
       </section>}
     </div>
     {entryFor && <ReadingEntryModal patient={entryFor} onClose={() => setEntryFor(null)} onSaved={() => { setEntryFor(null); router.refresh(); }} />}
@@ -90,14 +89,63 @@ export default function DoctorDashboardLovable({ patients, userName, libraryEntr
 }
 
 function initials(name: string) { return name.split(" ").map((n) => n[0]).join(""); }
+function RecBadge({ className = "" }: { className?: string }) { return <span className={`rounded-md bg-secondary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary ${className}`}>Priporočeno</span>; }
 function Card({ title, children }: { title: string; children: React.ReactNode }) { return <section className="rounded-2xl border border-border bg-card p-5"><h3 className="mb-3 font-bold">{title}</h3>{children}</section>; }
 const field = "w-full rounded-xl border border-border bg-card px-3 py-3 text-sm";
 
-function MetricView({ patient, onEntry, onHospital }: { patient: Patient; onEntry: () => void; onHospital: () => void }) {
+function MetricView({ patient, standards, onEntry, onHospital }: { patient: Patient; standards: Standard[]; onEntry: () => void; onHospital: () => void }) {
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const selected = patient.plans.find((p) => p.type === selectedType) ?? null;
   return <div className="pt-5">
     <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b pb-4"><h3 className="font-semibold">Izhodišče pred odpustom in meritve</h3><div className="flex gap-2"><button type="button" onClick={onHospital} className="rounded-lg border border-border px-4 py-2 text-sm font-bold">Podatki iz bolnišnice</button><button type="button" onClick={onEntry} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white">＋ Vpiši meritev</button></div></div>
-    <div className="mb-4 grid gap-3 sm:grid-cols-2">{patient.plans.map((plan) => { const reading = patient.measurements.find((m) => m.type === plan.type); const series = patient.measurements.filter((m) => m.type === plan.type && m.value !== null); const zones = [plan.greenZone && `Zelena: ${plan.greenZone}`, plan.yellowZone && `Rumena: ${plan.yellowZone}`, plan.redZone && `Rdeča: ${plan.redZone}`].filter(Boolean).join(" · "); return <article key={plan.id} className="rounded-xl border border-border p-4"><h3 className="font-bold">{plan.label}</h3><p className="mt-3 text-2xl font-bold">{reading ? (reading.value !== null ? `${reading.value}${plan.unit ? ` ${plan.unit}` : ""}` : reading.valueText ?? (reading.photoUrl ? "Slika" : "—")) : "—"}</p><p className="mt-1 text-xs text-muted-foreground">{plan.frequency}{plan.baseline ? ` · izhodišče: ${plan.baseline}` : ""}</p>{zones && <p className="mt-1 text-xs text-muted-foreground">{zones}</p>}{reading?.severity && <span className={`mt-2 inline-block rounded-md px-2 py-1 text-xs font-bold ${severityClass(reading.severity)}`}>{severityLabel[reading.severity]}</span>}{(plan.kind === "NUMERIC" || plan.kind === "PRESSURE") && series.length > 0 && <div className="mt-3 border-t pt-2"><p className="mb-1 text-xs font-bold text-muted-foreground">Trend ({series.length} meritev)</p><TrendChart points={series.map((m) => ({ id: m.id, value: m.value as number, recordedAt: m.recordedAt }))} unit={plan.unit} thresholds={{ l1: plan.thresholdL1, l2: plan.thresholdL2, l3: plan.thresholdL3, lowL1: plan.thresholdLowL1, lowL2: plan.thresholdLowL2, lowL3: plan.thresholdLowL3 }} /></div>}</article>; })}</div>
+    {selected
+      ? <MetricDetail key={selected.id} patient={patient} plan={selected} standard={standards.find((s) => s.metricType === selected.type) ?? null} onBack={() => setSelectedType(null)} />
+      : <div className="mb-4 grid gap-3 sm:grid-cols-2">{patient.plans.map((plan) => { const reading = patient.measurements.find((m) => m.type === plan.type); const series = patient.measurements.filter((m) => m.type === plan.type && m.value !== null); const zones = [plan.greenZone && `Zelena: ${plan.greenZone}`, plan.yellowZone && `Rumena: ${plan.yellowZone}`, plan.redZone && `Rdeča: ${plan.redZone}`].filter(Boolean).join(" · "); return <article key={plan.id} role="button" tabIndex={0} onClick={() => setSelectedType(plan.type)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedType(plan.type); } }} className="cursor-pointer rounded-xl border border-border p-4 transition-colors hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary"><div className="flex items-start justify-between gap-2"><h3 className="font-bold">{plan.label}</h3><ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" /></div><p className="mt-3 text-2xl font-bold">{reading ? (reading.value !== null ? `${reading.value}${plan.unit ? ` ${plan.unit}` : ""}` : reading.valueText ?? (reading.photoUrl ? "Slika" : "—")) : "—"}</p><p className="mt-1 text-xs text-muted-foreground">{plan.frequency}{plan.baseline ? ` · izhodišče: ${plan.baseline}` : ""}</p>{zones && <p className="mt-1 text-xs text-muted-foreground">{zones}</p>}{reading?.severity && <span className={`mt-2 inline-block rounded-md px-2 py-1 text-xs font-bold ${severityClass(reading.severity)}`}>{severityLabel[reading.severity]}</span>}{(plan.kind === "NUMERIC" || plan.kind === "PRESSURE") && series.length > 0 && <div className="mt-3 border-t pt-2"><TrendChart compact points={series.map((m) => ({ id: m.id, value: m.value as number, recordedAt: m.recordedAt }))} unit={plan.unit} thresholds={{ l1: plan.thresholdL1, l2: plan.thresholdL2, l3: plan.thresholdL3, lowL1: plan.thresholdLowL1, lowL2: plan.thresholdLowL2, lowL3: plan.thresholdLowL3 }} /></div>}</article>; })}</div>}
     {!patient.plans.length && <p className="text-sm text-muted-foreground">Ni merilnih načrtov.</p>}
+  </div>;
+}
+
+// --- Podrobni pregled posamezne vrste meritve: trend, zgodovina in urejanje standardov ---
+function MetricDetail({ patient, plan, standard, onBack }: { patient: Patient; plan: Plan; standard: Standard | null; onBack: () => void }) {
+  const router = useRouter();
+  const [form, setForm] = useState<Record<"greenZone" | "yellowZone" | "redZone" | "thresholdL1" | "thresholdL2" | "thresholdL3" | "thresholdLowL1" | "thresholdLowL2" | "thresholdLowL3", string>>({
+    greenZone: plan.greenZone ?? "", yellowZone: plan.yellowZone ?? "", redZone: plan.redZone ?? "",
+    thresholdL1: plan.thresholdL1 != null ? String(plan.thresholdL1) : "", thresholdL2: plan.thresholdL2 != null ? String(plan.thresholdL2) : "", thresholdL3: plan.thresholdL3 != null ? String(plan.thresholdL3) : "",
+    thresholdLowL1: plan.thresholdLowL1 != null ? String(plan.thresholdLowL1) : "", thresholdLowL2: plan.thresholdLowL2 != null ? String(plan.thresholdLowL2) : "", thresholdLowL3: plan.thresholdLowL3 != null ? String(plan.thresholdLowL3) : "",
+  });
+  const [busy, setBusy] = useState(""); const [msg, setMsg] = useState(""); const [error, setError] = useState("");
+  const set = (key: keyof typeof form, value: string) => setForm((f) => ({ ...f, [key]: value }));
+  const num = (v: string) => (v.trim() === "" ? null : Number(v));
+  const history = [...patient.measurements.filter((m) => m.type === plan.type)].sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime());
+  const latest = history[0];
+  const series = history.filter((m) => m.value !== null);
+  const planPayload = (p: Plan) => ({ ...p, baselineDate: p.baselineDate ? p.baselineDate.slice(0, 10) : "" });
+  const stdLine = standard ? [standard.thresholdL3 != null && `L3 > ${standard.thresholdL3}`, standard.thresholdLowL3 != null && `L3 < ${standard.thresholdLowL3}`, standard.thresholdL2 != null && `L2 > ${standard.thresholdL2}`, standard.thresholdLowL2 != null && `L2 < ${standard.thresholdLowL2}`, standard.thresholdL1 != null && `L1 > ${standard.thresholdL1}`, standard.thresholdLowL1 != null && `L1 < ${standard.thresholdLowL1}`, standard.greenZone && `zelena: ${standard.greenZone}`, standard.yellowZone && `rumena: ${standard.yellowZone}`, standard.redZone && `rdeča: ${standard.redZone}`].filter(Boolean).join(" · ") : "";
+  async function savePlan() {
+    setBusy("plan"); setError(""); setMsg("");
+    const plans = patient.plans.map((p) => p.type === plan.type ? { ...planPayload(p), greenZone: form.greenZone.trim() || null, yellowZone: form.yellowZone.trim() || null, redZone: form.redZone.trim() || null, thresholdL1: num(form.thresholdL1), thresholdL2: num(form.thresholdL2), thresholdL3: num(form.thresholdL3), thresholdLowL1: num(form.thresholdLowL1), thresholdLowL2: num(form.thresholdLowL2), thresholdLowL3: num(form.thresholdLowL3), customized: true } : planPayload(p));
+    const res = await fetch(`/api/patients/${patient.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plans }) });
+    setBusy("");
+    if (!res.ok) { setError((await res.json()).error || "Shranjevanje ni uspelo"); return; }
+    setMsg("Standard meritve shranjen za tega pacienta."); router.refresh();
+  }
+  async function saveStandard() {
+    setBusy("std"); setError(""); setMsg("");
+    const res = await fetch("/api/standards", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ metricType: plan.type, label: plan.label, unit: plan.unit, thresholdL1: num(form.thresholdL1), thresholdL2: num(form.thresholdL2), thresholdL3: num(form.thresholdL3), thresholdLowL1: num(form.thresholdLowL1), thresholdLowL2: num(form.thresholdLowL2), thresholdLowL3: num(form.thresholdLowL3), greenZone: form.greenZone.trim() || null, yellowZone: form.yellowZone.trim() || null, redZone: form.redZone.trim() || null }) });
+    setBusy("");
+    if (!res.ok) { setError((await res.json()).error || "Shranjevanje ni uspelo"); return; }
+    setMsg("Shranjeno tudi kot standard bolnice (velja za nove paciente)."); router.refresh();
+  }
+  const numField = (key: "thresholdL1" | "thresholdL2" | "thresholdL3" | "thresholdLowL1" | "thresholdLowL2" | "thresholdLowL3", label: string) => <label className="text-xs">{label}<input type="number" step="any" value={form[key]} onChange={(e) => set(key, e.target.value)} className={`${field} mt-1`} /></label>;
+  return <div className="space-y-5">
+    <div className="flex flex-wrap items-center justify-between gap-3"><button type="button" onClick={onBack} className="rounded-lg border border-border px-3 py-2 text-sm font-bold">← Vse meritve</button>{plan.customized && <span className="rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-800">Prilagojeno za pacienta</span>}</div>
+    <div><h3 className="font-display text-2xl">{plan.label}{plan.unit ? ` (${plan.unit})` : ""}</h3><p className="mt-1 text-sm text-muted-foreground">{plan.frequency}{plan.baseline ? ` · izhodišče: ${plan.baseline}${plan.unit ? ` ${plan.unit}` : ""}` : ""}</p></div>
+    {latest && <section className="rounded-2xl border border-border bg-card p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Zadnja meritev</p><p className="mt-1 text-3xl font-bold">{latest.value !== null ? `${latest.value}${plan.unit ? ` ${plan.unit}` : ""}` : latest.valueText ?? (latest.photoUrl ? "Slika" : "—")}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(latest.recordedAt).toLocaleString("sl-SI")} · {latest.author === "ZDRAVNIK" ? "Zdravnik" : "Pacient"}{latest.note ? ` · ${latest.note}` : ""}</p></div>{latest.severity && <span className={`rounded-md px-2 py-1 text-xs font-bold ${severityClass(latest.severity)}`}>{severityLabel[latest.severity]}</span>}</div>{(plan.kind === "NUMERIC" || plan.kind === "PRESSURE") && series.length > 0 && <div className="mt-4 border-t pt-4"><p className="mb-2 text-xs font-bold text-muted-foreground">Trend ({series.length} meritev)</p><TrendChart points={series.map((m) => ({ id: m.id, value: m.value as number, recordedAt: m.recordedAt }))} unit={plan.unit} thresholds={{ l1: plan.thresholdL1, l2: plan.thresholdL2, l3: plan.thresholdL3, lowL1: plan.thresholdLowL1, lowL2: plan.thresholdLowL2, lowL3: plan.thresholdLowL3 }} /></div>}</section>}
+    <section className="rounded-2xl border border-border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">Standard te meritve</h3>{stdLine && <p className="text-xs text-muted-foreground">Standard bolnice: {stdLine}</p>}</div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-3"><label className="text-xs">Zelena cona<input value={form.greenZone} onChange={(e) => set("greenZone", e.target.value)} className={`${field} mt-1`} placeholder="npr. 60–100" /></label><label className="text-xs">Rumena cona<input value={form.yellowZone} onChange={(e) => set("yellowZone", e.target.value)} className={`${field} mt-1`} placeholder="npr. 50–60" /></label><label className="text-xs">Rdeča cona<input value={form.redZone} onChange={(e) => set("redZone", e.target.value)} className={`${field} mt-1`} placeholder="npr. &lt; 50" /></label>{numField("thresholdL1", "L1 zgornja")}{numField("thresholdL2", "L2 zgornja")}{numField("thresholdL3", "L3 zgornja")}{numField("thresholdLowL1", "L1 spodnja")}{numField("thresholdLowL2", "L2 spodnja")}{numField("thresholdLowL3", "L3 spodnja")}</div>
+      <div className="mt-4 flex flex-wrap items-center gap-2"><button type="button" disabled={busy === "plan"} onClick={savePlan} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white">Shrani za pacienta</button><button type="button" disabled={busy === "std"} onClick={saveStandard} className="rounded-lg border border-border px-4 py-2 text-sm font-bold">Shrani kot standard bolnice</button>{msg && <p role="status" className="text-sm font-bold text-green-700">{msg}</p>}{error && <p role="alert" className="text-sm text-red-700">{error}</p>}</div>
+    </section>
+    <section><h3 className="mb-1 font-bold">Zgodovina — {plan.label}</h3>{history.length ? history.map((m) => <article key={m.id} className="border-b py-3"><div className="flex flex-wrap items-center justify-between gap-3"><strong>{m.value !== null ? `${m.value}${plan.unit ? ` ${plan.unit}` : ""}` : m.valueText ?? (m.photoUrl ? "Naložena slika" : "—")}</strong><span className="text-sm text-muted-foreground">{new Date(m.recordedAt).toLocaleString("sl-SI")}</span></div>{m.note && <p className="mt-1 text-sm">{m.note}</p>}{m.photoUrl?.startsWith("/") && <img src={m.photoUrl} alt="Slika" className="mt-2 max-h-48 rounded-lg border border-border" />}<p className="mt-1 text-xs text-muted-foreground">{m.author === "ZDRAVNIK" ? "Zdravnik" : "Pacient"}{m.severity && <> · <span className={`rounded px-1 font-bold ${severityClass(m.severity)}`}>{severityLabel[m.severity]}</span></>}</p></article>) : <p className="py-3 text-sm text-muted-foreground">Še ni vnosov za to meritev.</p>}</section>
   </div>;
 }
 
@@ -118,6 +166,11 @@ function ExercisesView({ patient, exerciseSets }: { patient: Patient; exerciseSe
   const router = useRouter();
   const [dates, setDates] = useState<Record<string, string>>(() => Object.fromEntries(patient.exerciseAssignments.map((a) => [a.exerciseSetId, a.startDate])));
   const [busy, setBusy] = useState("");
+  const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
+  useEffect(() => { fetch("/api/catalog").then((r) => r.json()).then(setCatalog).catch(() => { }); }, []);
+  // Priporočeni sklopi za stanje pacienta iz kataloga (če je bil pacient ustvarjen iz kataloga)
+  const recommendedIds = useMemo(() => new Set(catalog?.conditions.find((c) => patient.catalogSource && c.condition.toLocaleLowerCase("sl") === patient.catalogSource.toLocaleLowerCase("sl"))?.exerciseSetIds ?? []), [catalog, patient.catalogSource]);
+  const sortedSets = useMemo(() => [...exerciseSets].sort((a, b) => Number(recommendedIds.has(b.id)) - Number(recommendedIds.has(a.id))), [exerciseSets, recommendedIds]);
   async function toggle(setId: string, assign: boolean) {
     setBusy(setId);
     if (assign) {
@@ -131,12 +184,8 @@ function ExercisesView({ patient, exerciseSets }: { patient: Patient; exerciseSe
     setBusy("");
   }
   const assigned = new Set(patient.exerciseAssignments.map((a) => a.exerciseSetId));
-  return <div className="space-y-3 pt-5">{exerciseSets.map((s) => { const isAssigned = assigned.has(s.id); const a = patient.exerciseAssignments.find((x) => x.exerciseSetId === s.id); return <article key={s.id} className={`rounded-xl border p-4 ${isAssigned ? "border-primary bg-card" : "border-border"}`}><div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h3 className="font-bold">{s.name}</h3><p className="mt-1 text-xs text-muted-foreground">{s.kind === "exam" ? "Preiskava" : s.kind === "advice" ? "Priporočila" : "Vaje"}{s.pages ? ` · ${s.pages} str.` : ""}{s.condition ? ` · ${s.condition}` : ""}</p>{s.pdfUrl && <p className="mt-1"><a href={s.pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary underline">PDF</a>{s.sourceUrl && <a href={s.sourceUrl} target="_blank" rel="noreferrer" className="ml-2 text-xs text-muted-foreground underline">izvirni vir</a>}</p>}{a && <p className="mt-1 text-xs font-bold text-primary">Začetek: {a.startDate}{a.acknowledgedDate ? ` · potrjeno ${a.acknowledgedDate}` : ""}</p>}</div>
+  return <div className="space-y-3 pt-5">{recommendedIds.size > 0 && <p className="text-xs text-muted-foreground">Priporočeni sklopi za stanje »{patient.catalogSource}« so označeni z <RecBadge /> in razvrščeni na vrh — oznaka ostane tudi, če dodelitev spremenite.</p>}{sortedSets.map((s) => { const isAssigned = assigned.has(s.id); const rec = recommendedIds.has(s.id); const a = patient.exerciseAssignments.find((x) => x.exerciseSetId === s.id); return <article key={s.id} className={`rounded-xl border p-4 ${isAssigned ? "border-primary bg-card" : "border-border"}`}><div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h3 className="font-bold">{s.name}{rec && <RecBadge className="ml-2 align-middle" />}</h3><p className="mt-1 text-xs text-muted-foreground">{s.kind === "exam" ? "Preiskava" : s.kind === "advice" ? "Priporočila" : "Vaje"}{s.pages ? ` · ${s.pages} str.` : ""}{s.condition ? ` · ${s.condition}` : ""}</p>{s.pdfUrl && <p className="mt-1"><a href={s.pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary underline">PDF</a>{s.sourceUrl && <a href={s.sourceUrl} target="_blank" rel="noreferrer" className="ml-2 text-xs text-muted-foreground underline">izvirni vir</a>}</p>}{a && <p className="mt-1 text-xs font-bold text-primary">Začetek: {a.startDate}{a.acknowledgedDate ? ` · potrjeno ${a.acknowledgedDate}` : ""}</p>}</div>
         <div className="flex items-center gap-2">{isAssigned && <input type="date" value={dates[s.id] ?? ""} onChange={(e) => setDates((d) => ({ ...d, [s.id]: e.target.value }))} className="rounded-lg border border-border px-2 py-1 text-xs" />}<button type="button" disabled={busy === s.id} onClick={() => toggle(s.id, !isAssigned)} className={`rounded-lg px-3 py-2 text-xs font-bold ${isAssigned ? "border border-red-300 text-red-700" : "bg-primary text-white"}`}>{isAssigned ? "Odstrani" : "Dodeli"}</button></div></div>{s.instructions && <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{s.instructions}</p>}</article>; })}</div>;
-}
-
-function HistoryView({ patient }: { patient: Patient }) {
-  return <div className="pt-5">{[...patient.measurements].sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()).map((m) => <article key={m.id} className="border-b py-4"><div className="flex flex-wrap items-center justify-between gap-3"><strong>{m.type}</strong><span className="text-sm text-muted-foreground">{new Date(m.recordedAt).toLocaleString("sl-SI")}</span></div><p className="mt-2 text-sm">{m.value !== null ? m.value : m.valueText ?? (m.photoUrl ? "Naložena slika" : "—")}{m.note ? ` · ${m.note}` : ""}</p>{m.photoUrl?.startsWith("/") && <img src={m.photoUrl} alt="Slika" className="mt-2 max-h-48 rounded-lg border border-border" />}<p className="mt-1 text-xs text-muted-foreground">{m.author === "ZDRAVNIK" ? "Zdravnik" : "Pacient"}{m.severity && <> · <span className={`rounded px-1 font-bold ${severityClass(m.severity)}`}>{severityLabel[m.severity]}</span></>}</p></article>)}{!patient.measurements.length && <p className="py-5 text-sm text-muted-foreground">Pacient še nima vnosov.</p>}</div>;
 }
 
 function ContactsView({ patient }: { patient: Patient }) {
@@ -226,11 +275,24 @@ const metricOptions = [
   { type: "EKG", label: "EKG", unit: "", kind: "IMAGE" },
   { type: "SLIKA_RANE", label: "Slika rane / šiva", unit: "", kind: "IMAGE" },
 ];
+// Demo podatki za simulacijo integracije z ZZZS (eZdravje): ob vnosu demo številke se podatki pacienta samodejno izpolnijo (razen diagnoze)
+const DEMO_ZZZS = "1234567890123";
+const DEMO_ZZZS_PATIENT = { name: "Ana Kovač", email: "ana.kovac@example.com", dischargeDate: "2026-11-20", contactName: "Marko Kovač", contactPhone: "+386 41 234 567" };
+// Demo zdravila iz zVem (e-recepti) — ob demo ZZZS se samodejno "prenešajo" v obrazec
+const DEMO_ZVEM_MEDICATIONS: MedicationDraft[] = [
+  { name: "Paracetamol", dosage: "500 mg", times: "08:00, 20:00", duration: "5 dni", note: "Po potrebi, največ 3x na dan" },
+  { name: "Ibuprofen", dosage: "400 mg", times: "08:00, 14:00, 20:00", duration: "7 dni", note: "Po jedi" },
+];
+const normalizeZzzs = (v: string) => v.replace(/[\s.\-]/g, "");
 function AddPatientModal({ exerciseSets, onClose, onCreated }: { exerciseSets: ExerciseSet[]; onClose: () => void; onCreated: (c: { email: string; password: string }) => void }) {
   const [tab, setTab] = useState("profile"); const [error, setError] = useState("");
+  const [zzzsStatus, setZzzsStatus] = useState<"" | "ok" | "unknown">("");
+  const [zvemCount, setZvemCount] = useState(0);
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [zzzs, setZzzs] = useState(""); const [diagnosis, setDiagnosis] = useState(""); const [dischargeDate, setDischargeDate] = useState(""); const [contactName, setContactName] = useState(""); const [contactPhone, setContactPhone] = useState("");
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
   const [catalogPick, setCatalogPick] = useState("");
+  // Priporočila izbranega stanja iz kataloga — ostanejo nastavljena tudi, če zdravnik izbiro kasneje spremeni
+  const [recommended, setRecommended] = useState<{ metricTypes: Set<string>; exerciseSetIds: Set<string> }>({ metricTypes: new Set(), exerciseSetIds: new Set() });
   const [metrics, setMetrics] = useState<MetricDraft[]>([]); const [medications, setMedications] = useState<MedicationDraft[]>([]);
   const [sideEffects, setSideEffects] = useState(""); const [timeline, setTimeline] = useState(""); const [nutrition, setNutrition] = useState(""); const [exercises, setExercises] = useState("");
   // Izbrani sklopi vaj: setId → datum začetka ("YYYY-MM-DD"); manualDates so ročno nastavljeni datumi
@@ -246,10 +308,27 @@ function AddPatientModal({ exerciseSets, onClose, onCreated }: { exerciseSets: E
     const auto = autoDateFor(pickedGuidance(), discharge);
     setExerciseDates((old) => Object.fromEntries(Object.keys(old).map((id) => [id, manualDates.has(id) ? old[id] : auto])));
   }
+  // Simulacija ZZZS: demo številka samodejno izpolni vse podatke o pacientu razen diagnoze
+  function applyZzzs(value: string) {
+    setZzzs(value);
+    const clean = normalizeZzzs(value);
+    if (clean === DEMO_ZZZS) {
+      setName(DEMO_ZZZS_PATIENT.name); setEmail(DEMO_ZZZS_PATIENT.email);
+      setDischargeDate(DEMO_ZZZS_PATIENT.dischargeDate); refreshAutoDates(DEMO_ZZZS_PATIENT.dischargeDate);
+      setContactName(DEMO_ZZZS_PATIENT.contactName); setContactPhone(DEMO_ZZZS_PATIENT.contactPhone);
+      // zVem (e-recepti): demo zdravila se prenesejo samo, če seznam še ni ročno polnjen
+      setMedications((cur) => (cur.length === 0 ? DEMO_ZVEM_MEDICATIONS.map((m) => ({ ...m })) : cur));
+      setZvemCount(DEMO_ZVEM_MEDICATIONS.length);
+      setZzzsStatus("ok");
+    } else {
+      setZzzsStatus(clean.length >= 9 ? "unknown" : "");
+    }
+  }
   function pickCondition(condition: string) {
     setCatalogPick(condition);
     const c = catalog?.conditions.find((x) => x.condition === condition);
-    if (!c) { setDiagnosis(condition); return; }
+    if (!c) { setDiagnosis(condition); setRecommended({ metricTypes: new Set(), exerciseSetIds: new Set() }); return; }
+    setRecommended({ metricTypes: new Set(c.plans.map((p) => p.type)), exerciseSetIds: new Set(c.exerciseSetIds) });
     setDiagnosis(c.condition);
     setMetrics(c.plans.map((p) => ({ type: p.type, label: p.label, unit: p.unit, kind: p.kind, frequency: p.frequency, baseline: "", baselineDate: "", customized: false, greenZone: p.greenZone ?? "", yellowZone: p.yellowZone ?? "", redZone: p.redZone ?? "", thresholdL2: p.thresholdL2 ?? null, thresholdL3: p.thresholdL3 ?? null, thresholdLowL2: p.thresholdLowL2 ?? null, thresholdLowL3: p.thresholdLowL3 ?? null })));
     setSideEffects(c.sideEffects); setTimeline(c.timeline); setNutrition(c.nutrition);
@@ -282,35 +361,47 @@ function AddPatientModal({ exerciseSets, onClose, onCreated }: { exerciseSets: E
     } catch { setError("Dodajanje pacienta ni uspelo."); }
   }
   const picked = catalog?.conditions.find((c) => c.condition === catalogPick);
+  // Priporočila iz kataloga naj bodo vedno na vrhu (stabilen sort ohrani prvotni vrstni red znotraj skupin)
+  const sortedMetricOptions = [...metricOptions].sort((a, b) => Number(recommended.metricTypes.has(b.type)) - Number(recommended.metricTypes.has(a.type)));
+  const sortedMetrics = [...metrics].sort((a, b) => Number(recommended.metricTypes.has(b.type)) - Number(recommended.metricTypes.has(a.type)));
+  const visibleExerciseSets = exerciseSets.filter((s) => `${s.name} ${s.condition}`.toLocaleLowerCase("sl").includes(exerciseSearch.toLocaleLowerCase("sl"))).sort((a, b) => Number(recommended.exerciseSetIds.has(b.id)) - Number(recommended.exerciseSetIds.has(a.id)));
   return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" role="dialog" aria-modal="true"><form onSubmit={submit} className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-card shadow-xl">
-    <header className="flex items-start justify-between border-b px-6 py-5"><div><h2 className="font-display text-2xl">Nov pacient</h2><p className="mt-1 text-sm text-muted-foreground">Podatki pacienta in načrt spremljanja</p></div><button type="button" onClick={onClose} className="text-xl text-muted-foreground" aria-label="Zapri">×</button></header>
-    <nav className="flex gap-1 overflow-x-auto border-b px-6">{[["profile", "Podatki"], ["metrics", "Meritve"], ["exercises", "Vaje"], ["medications", "Zdravila"], ["care", "Okrevanje"]].map(([value, label]) => <button key={value} type="button" onClick={() => setTab(value)} className={`px-3 py-3 text-sm font-bold ${tab === value ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</nav>
-    <div className="overflow-y-auto px-6 py-5">
+    <header className="flex shrink-0 items-start justify-between border-b px-6 py-5"><div><h2 className="font-display text-2xl">Nov pacient</h2><p className="mt-1 text-sm text-muted-foreground">Podatki pacienta in načrt spremljanja</p></div><button type="button" onClick={onClose} className="text-xl text-muted-foreground" aria-label="Zapri">×</button></header>
+    <nav className="flex shrink-0 gap-1 overflow-x-auto border-b px-6">{[["profile", "Podatki"], ["metrics", "Meritve"], ["exercises", "Vaje"], ["medications", "Zdravila"], ["care", "Okrevanje"]].map(([value, label]) => <button key={value} type="button" onClick={() => setTab(value)} className={`px-3 py-3 text-sm font-bold ${tab === value ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</nav>
+    <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
       <div className={tab === "profile" ? "grid gap-4 sm:grid-cols-2" : "hidden"}>
+        <div className="rounded-xl border border-primary/40 bg-secondary p-4 sm:col-span-2">
+          <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-bold text-primary">Demo ZZZS številka: <span className="font-mono">{DEMO_ZZZS}</span></p><button type="button" onClick={() => applyZzzs(DEMO_ZZZS)} className="rounded-lg border border-primary px-3 py-1 text-xs font-bold text-primary">Vstavi demo številko</button></div>
+          <p className="mt-1 text-xs text-muted-foreground">Simulacija integracije z ZZZS: ob vnosu te številke v polje »ZZZS številka« se vsi podatki o pacientu (ime, e-pošta, datum odpusta, kontaktna oseba, telefon) samodejno izpolnijo iz obstoječega sistema — razen diagnoze, ki jo zdravnik izbere ročno.</p>
+          {zzzsStatus === "ok" && <p role="status" className="mt-2 text-xs font-bold text-green-700">Podatki iz ZZZS za {DEMO_ZZZS} ({DEMO_ZZZS_PATIENT.name}) so bili samodejno pridobljeni.</p>}
+          {zzzsStatus === "unknown" && <p role="status" className="mt-2 text-xs text-muted-foreground">Številka ni znana v demo bazi ZZZS — podatki ostajajo na ročni vnos.</p>}
+        </div>
         <label className="block text-sm font-bold">Stanje iz kataloga (samodejna nastavitev)<select value={catalogPick} onChange={(e) => pickCondition(e.target.value)} className={`${field} mt-2`}><option value="">— ročni vnos diagnoze —</option>{catalog?.conditions.map((c) => <option key={c.condition} value={c.condition}>{c.condition}</option>)}</select></label>
         <label className="block text-sm font-bold">Diagnoza / stanje *<input value={diagnosis} onChange={(e) => { setDiagnosis(e.target.value); setCatalogPick(""); }} className={`${field} mt-2`} /></label>
         {picked && <p className="text-xs text-muted-foreground sm:col-span-2">Iz kataloga: {picked.metrics.length} meritev, {picked.exerciseSetIds.length} sklopov vaj, začetek vaj: {picked.startGuidance}{picked.equipment && picked.equipment !== "-" ? `, oprema: ${picked.equipment}` : ""}</p>}
         <label className="block text-sm font-bold">Ime in priimek *<input autoFocus value={name} onChange={(e) => setName(e.target.value)} className={`${field} mt-2`} /></label>
         <label className="block text-sm font-bold">E-pošta<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={`${field} mt-2`} placeholder="pacient@example.com" /></label>
-        <label className="block text-sm font-bold">ZZZS številka<input value={zzzs} onChange={(e) => setZzzs(e.target.value)} className={`${field} mt-2`} /></label>
+        <label className="block text-sm font-bold">ZZZS številka<input value={zzzs} onChange={(e) => applyZzzs(e.target.value)} className={`${field} mt-2`} placeholder={`npr. ${DEMO_ZZZS} (demo)`} /><span className="mt-1 block text-xs font-normal text-muted-foreground">Demo številka {DEMO_ZZZS} samodejno izpolni podatke pacienta.</span></label>
         <label className="block text-sm font-bold">Datum odpusta<input type="date" value={dischargeDate} onChange={(e) => { setDischargeDate(e.target.value); refreshAutoDates(e.target.value); }} className={`${field} mt-2`} /></label>
         <label className="block text-sm font-bold">Kontaktna oseba<input value={contactName} onChange={(e) => setContactName(e.target.value)} className={`${field} mt-2`} /></label>
         <label className="block text-sm font-bold sm:col-span-2">Telefon kontaktne osebe<input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className={`${field} mt-2`} /></label>
       </div>
       <div className={tab === "metrics" ? "space-y-4" : "hidden"}>
         <p className="text-sm text-muted-foreground">Izberite meritve za spremljanje (če je izbrano stanje iz kataloga, so že nastavljene).</p>
-        <div className="grid gap-2 sm:grid-cols-2">{metricOptions.map((option) => { const enabled = metrics.some((m) => m.type === option.type); return <label key={option.type} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm ${enabled ? "border-primary bg-secondary" : "border-border"}`}><input type="checkbox" checked={enabled} onChange={() => toggleMetric(option)} />{option.label}</label>; })}</div>
-        {metrics.map((metric, index) => <fieldset key={metric.type} className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2"><legend className="px-2 text-sm font-bold">{metric.label}</legend><label className="text-sm">Izhodiščna vrednost<input value={metric.baseline} onChange={(e) => setMetrics((c) => c.map((m, i) => i === index ? { ...m, baseline: e.target.value } : m))} className={`${field} mt-1`} /></label><label className="text-sm">Datum izhodišča<input type="date" value={metric.baselineDate} onChange={(e) => setMetrics((c) => c.map((m, i) => i === index ? { ...m, baselineDate: e.target.value } : m))} className={`${field} mt-1`} /></label><label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={metric.customized} onChange={(e) => setMetrics((c) => c.map((m, i) => i === index ? { ...m, customized: e.target.checked } : m))} />Prilagodi meje temu pacientu</label>{metric.customized && (["greenZone", "yellowZone", "redZone"] as const).map((key) => <label key={key} className="text-sm">{key === "greenZone" ? "Zelena" : key === "yellowZone" ? "Rumena" : "Rdeča"}<input value={metric[key]} onChange={(e) => setMetrics((c) => c.map((m, i) => i === index ? { ...m, [key]: e.target.value } : m))} className={`${field} mt-1`} /></label>)}
+        {recommended.metricTypes.size > 0 && <p className="text-xs text-muted-foreground">Priporočila kataloga za izbrano stanje so označena z <RecBadge /> in razvrščena na vrh — oznaka ostane tudi, če izbiro spremenite.</p>}
+        <div className="grid gap-2 sm:grid-cols-2">{sortedMetricOptions.map((option) => { const enabled = metrics.some((m) => m.type === option.type); const rec = recommended.metricTypes.has(option.type); return <label key={option.type} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm ${enabled ? "border-primary bg-secondary" : "border-border"}`}><input type="checkbox" checked={enabled} onChange={() => toggleMetric(option)} />{option.label}{rec && <RecBadge className="ml-1" />}</label>; })}</div>
+        {sortedMetrics.map((metric) => <fieldset key={metric.type} className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2"><legend className="px-2 text-sm font-bold">{metric.label}{recommended.metricTypes.has(metric.type) && <RecBadge className="ml-2" />}</legend><label className="text-sm">Izhodiščna vrednost<input value={metric.baseline} onChange={(e) => setMetrics((c) => c.map((m) => m.type === metric.type ? { ...m, baseline: e.target.value } : m))} className={`${field} mt-1`} /></label><label className="text-sm">Datum izhodišča<input type="date" value={metric.baselineDate} onChange={(e) => setMetrics((c) => c.map((m) => m.type === metric.type ? { ...m, baselineDate: e.target.value } : m))} className={`${field} mt-1`} /></label><label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={metric.customized} onChange={(e) => setMetrics((c) => c.map((m) => m.type === metric.type ? { ...m, customized: e.target.checked } : m))} />Prilagodi meje temu pacientu</label>{metric.customized && (["greenZone", "yellowZone", "redZone"] as const).map((key) => <label key={key} className="text-sm">{key === "greenZone" ? "Zelena" : key === "yellowZone" ? "Rumena" : "Rdeča"}<input value={metric[key]} onChange={(e) => setMetrics((c) => c.map((m) => m.type === metric.type ? { ...m, [key]: e.target.value } : m))} className={`${field} mt-1`} /></label>)}
         </fieldset>)}
       </div>
       <div className={tab === "exercises" ? "space-y-3" : "hidden"}>
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-bold">Sklopi vaj in navodila</p><span className="text-xs text-muted-foreground">Izbrano: {Object.keys(exerciseDates).length}</span></div>
-        {catalogPick && <p className="text-xs text-muted-foreground">Za stanje iz kataloga so sklopi vnaprej izbrani (začetek vaj: {pickedGuidance() || "po navodilu"}) — izbiro in datume lahko prilagodite.</p>}
+        {recommended.exerciseSetIds.size > 0 && <p className="text-xs text-muted-foreground">Priporočeni sklopi za izbrano stanje so označeni z <RecBadge /> in razvrščeni na vrh (začetek vaj: {pickedGuidance() || "po navodilu"}) — oznaka ostane tudi, če izbiro spremenite.</p>}
         <input aria-label="Poišči sklop vaj" value={exerciseSearch} onChange={(e) => setExerciseSearch(e.target.value)} placeholder="Poišči sklop ali navodilo …" className={field} />
-        <div className="space-y-2">{exerciseSets.filter((s) => `${s.name} ${s.condition}`.toLocaleLowerCase("sl").includes(exerciseSearch.toLocaleLowerCase("sl"))).map((s) => {
+        <div className="space-y-2">{visibleExerciseSets.map((s) => {
           const checked = exerciseDates[s.id] !== undefined;
+          const rec = recommended.exerciseSetIds.has(s.id);
           return <div key={s.id} className={`rounded-xl border p-3 ${checked ? "border-primary bg-secondary" : "border-border"}`}>
-            <label className="flex cursor-pointer items-start gap-3"><input type="checkbox" aria-label={s.name} checked={checked} onChange={(e) => toggleExercise(s.id, e.target.checked)} className="mt-1 accent-primary" /><span className="min-w-0"><span className="block text-sm font-bold">{s.name}</span><span className="block text-xs text-muted-foreground">{s.kind === "exam" ? "Preiskava" : s.kind === "advice" ? "Priporočila" : "Vaje"}{s.condition ? ` · ${s.condition}` : ""}{s.pages ? ` · ${s.pages} str.` : ""}</span></span></label>
+            <label className="flex cursor-pointer items-start gap-3"><input type="checkbox" aria-label={s.name} checked={checked} onChange={(e) => toggleExercise(s.id, e.target.checked)} className="mt-1 accent-primary" /><span className="min-w-0"><span className="block text-sm font-bold">{s.name}{rec && <RecBadge className="ml-2 align-middle" />}</span><span className="block text-xs text-muted-foreground">{s.kind === "exam" ? "Preiskava" : s.kind === "advice" ? "Priporočila" : "Vaje"}{s.condition ? ` · ${s.condition}` : ""}{s.pages ? ` · ${s.pages} str.` : ""}</span></span></label>
             {s.pdfUrl && <p className="mt-1"><a href={s.pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary underline">PDF</a>{s.sourceUrl && <a href={s.sourceUrl} target="_blank" rel="noreferrer" className="ml-2 text-xs text-muted-foreground underline">izvirni vir</a>}</p>}
             {checked && <label className="mt-2 block text-xs font-bold">Datum začetka<input type="date" aria-label={`Datum začetka: ${s.name}`} value={exerciseDates[s.id]} onChange={(e) => { const v = e.target.value; setExerciseDates((old) => ({ ...old, [s.id]: v })); if (v) setManualDates((old) => new Set(old).add(s.id)); }} className={`${field} mt-1`} /></label>}
           </div>;
@@ -318,6 +409,11 @@ function AddPatientModal({ exerciseSets, onClose, onCreated }: { exerciseSets: E
         {!exerciseSets.length && <p className="text-sm text-muted-foreground">Ni sklopov vaj.</p>}
       </div>
       <div className={tab === "medications" ? "space-y-4" : "hidden"}>
+        <div className="rounded-xl border border-primary/40 bg-secondary p-4">
+          <p className="text-sm font-bold text-primary">Integracija z zVem (e-recepti)</p>
+          <p className="mt-1 text-xs text-muted-foreground">Zdravila pacienta se avtomatsko prenesejo iz zVem (centralni register receptov): ob vnosu demo ZZZS številke <span className="font-mono">{DEMO_ZZZS}</span> na zavihku Podatki se demo zdravila samodejno prednapolnijo spodaj. Ročni vnos dodatnih zdravil (npr. brez recepta) ostane možen.</p>
+          {zvemCount > 0 && <p role="status" className="mt-2 text-xs font-bold text-green-700">Iz zVem samodejno prenešeno: {zvemCount} zdravil (demo).</p>}
+        </div>
         <button type="button" onClick={() => setMedications((c) => [...c, { name: "", dosage: "", times: "", duration: "", note: "" }])} className="rounded-xl border px-4 py-2 text-sm font-bold text-primary">＋ Dodaj zdravilo</button>
         {medications.map((medication, index) => <fieldset key={index} className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2"><legend className="px-2 font-bold">Zdravilo {index + 1}</legend>{(["name", "dosage", "times", "duration", "note"] as const).map((key) => <label key={key} className="text-sm">{key === "name" ? "Ime" : key === "dosage" ? "Odmerek" : key === "times" ? "Časi (npr. 08:00,20:00)" : key === "duration" ? "Trajanje" : "Opomba"}<input value={medication[key]} onChange={(e) => setMedications((c) => c.map((m, i) => i === index ? { ...m, [key]: e.target.value } : m))} className={`${field} mt-1`} /></label>)}</fieldset>)}
       </div>
@@ -328,7 +424,7 @@ function AddPatientModal({ exerciseSets, onClose, onCreated }: { exerciseSets: E
         <label className="block text-sm font-bold">Individualna navodila za vaje<textarea rows={3} value={exercises} onChange={(e) => setExercises(e.target.value)} className={`${field} mt-2`} /></label>
       </div>
     </div>
-    <footer className="border-t px-6 py-4">{error && <p role="alert" className="mb-3 text-sm text-red-700">{error}</p>}<div className="flex justify-end gap-2"><button type="button" onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-bold">Prekliči</button><button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">Dodaj pacienta</button></div></footer>
+    <footer className="shrink-0 border-t px-6 py-4">{error && <p role="alert" className="mb-3 text-sm text-red-700">{error}</p>}<div className="flex justify-end gap-2"><button type="button" onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-bold">Prekliči</button><button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">Dodaj pacienta</button></div></footer>
   </form></div>;
 }
 
@@ -355,19 +451,6 @@ function LibraryView({ entries }: { entries: LibraryEntry[] }) {
     <div className="space-y-2">{entries.map((e) => <article key={e.id} className="rounded-xl border border-border bg-card p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><span className="rounded bg-secondary px-2 py-0.5 text-xs font-bold text-primary">{e.category.replaceAll("_", " ")}</span><h3 className="mt-1 font-bold">{e.title}</h3><p className="mt-1 text-sm text-muted-foreground">{e.content}</p>{e.url && <a href={e.url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-bold text-primary underline">Odpri dokument</a>}</div><div className="flex gap-2"><button type="button" onClick={() => { setEditing(e.id); setEdit({ title: e.title, content: e.content, url: e.url ?? "" }); }} className="rounded-lg border px-3 py-1 text-xs font-bold">Uredi</button><button type="button" onClick={() => remove(e.id)} className="rounded-lg border border-red-300 px-3 py-1 text-xs font-bold text-red-700">Izbriši</button></div></div>
       {editing === e.id && <div className="mt-3 grid gap-2 border-t pt-3 sm:grid-cols-3"><input value={edit.title} onChange={(ev) => setEdit({ ...edit, title: ev.target.value })} className={field} /><input value={edit.content} onChange={(ev) => setEdit({ ...edit, content: ev.target.value })} className={field} /><input value={edit.url} onChange={(ev) => setEdit({ ...edit, url: ev.target.value })} placeholder="URL" className={field} /><button type="button" onClick={() => save(e.id)} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white sm:col-span-3 sm:w-auto">Shrani</button></div>}
     </article>)}</div></div>;
-}
-
-// --- Standardne meje bolnice ---
-function StandardsView({ standards }: { standards: Standard[] }) {
-  const router = useRouter();
-  const [rows, setRows] = useState(standards.map((s) => ({ ...s })));
-  const [busy, setBusy] = useState(false);
-  async function save(s: Standard) {
-    setBusy(true);
-    await fetch("/api/standards", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(s) });
-    setBusy(false); router.refresh();
-  }
-  return <div className="space-y-3 pt-5">{rows.map((s, i) => <article key={s.metricType} className="rounded-xl border border-border bg-card p-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">{s.label} <span className="text-xs font-normal text-muted-foreground">({s.metricType}{s.unit ? ` · ${s.unit}` : ""})</span></h3><button type="button" disabled={busy} onClick={() => save(s)} className="rounded-lg bg-primary px-3 py-1 text-xs font-bold text-white">Shrani</button></div><div className="mt-3 grid gap-2 sm:grid-cols-3"><label className="text-xs">Zelena cona<input value={s.greenZone ?? ""} onChange={(e) => setRows((r) => r.map((x, j) => j === i ? { ...x, greenZone: e.target.value } : x))} className={`${field} mt-1`} /></label><label className="text-xs">Rumena cona<input value={s.yellowZone ?? ""} onChange={(e) => setRows((r) => r.map((x, j) => j === i ? { ...x, yellowZone: e.target.value } : x))} className={`${field} mt-1`} /></label><label className="text-xs">Rdeča cona<input value={s.redZone ?? ""} onChange={(e) => setRows((r) => r.map((x, j) => j === i ? { ...x, redZone: e.target.value } : x))} className={`${field} mt-1`} /></label><label className="text-xs">L1 zgornja<input type="number" step="any" value={s.thresholdL1 ?? ""} onChange={(e) => setRows((r) => r.map((x, j) => j === i ? { ...x, thresholdL1: e.target.value === "" ? null : Number(e.target.value) } : x))} className={`${field} mt-1`} /></label><label className="text-xs">L2 zgornja<input type="number" step="any" value={s.thresholdL2 ?? ""} onChange={(e) => setRows((r) => r.map((x, j) => j === i ? { ...x, thresholdL2: e.target.value === "" ? null : Number(e.target.value) } : x))} className={`${field} mt-1`} /></label><label className="text-xs">L3 zgornja<input type="number" step="any" value={s.thresholdL3 ?? ""} onChange={(e) => setRows((r) => r.map((x, j) => j === i ? { ...x, thresholdL3: e.target.value === "" ? null : Number(e.target.value) } : x))} className={`${field} mt-1`} /></label><label className="text-xs">L1 spodnja<input type="number" step="any" value={s.thresholdLowL1 ?? ""} onChange={(e) => setRows((r) => r.map((x, j) => j === i ? { ...x, thresholdLowL1: e.target.value === "" ? null : Number(e.target.value) } : x))} className={`${field} mt-1`} /></label><label className="text-xs">L2 spodnja<input type="number" step="any" value={s.thresholdLowL2 ?? ""} onChange={(e) => setRows((r) => r.map((x, j) => j === i ? { ...x, thresholdLowL2: e.target.value === "" ? null : Number(e.target.value) } : x))} className={`${field} mt-1`} /></label><label className="text-xs">L3 spodnja<input type="number" step="any" value={s.thresholdLowL3 ?? ""} onChange={(e) => setRows((r) => r.map((x, j) => j === i ? { ...x, thresholdLowL3: e.target.value === "" ? null : Number(e.target.value) } : x))} className={`${field} mt-1`} /></label></div></article>)}</div>;
 }
 
 function AlertsView({ patient }: { patient: Patient }) {

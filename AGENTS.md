@@ -111,7 +111,7 @@ lovable/                  # referenčni UI projekt (izvor funkcij); izključen i
 - `POST /api/patients` z diagnozo, ki sovpada s katalogom (neobčutljivo na velikost črk), samodejno ustvari načrte, priporočila in dodelitve vaj (`catalogApplied: true`); začetni datum vaj se izračuna iz `Začetek vaj` kataloga + `procedureDate` (`takoj` → danes, `1-3 dni` → sredina okna; glej `autoExerciseStartDate`).
 - Če katalog za tip meritve nima alarma, se za načrt uporabijo **standardne meje bolnice** (`Standard`, urejanje prek `POST /api/standards`).
 - Pacient: opomnik "Čas je za začetek vaj" dokler ne potrdi (`POST /api/exercise-assignments/[id]/acknowledge`); v "Moj načrt" so priporočila + sklopi vaj s PDF gumbi.
-- Zdravnik: izbira stanja iz kataloga v modalu »Nov pacient«, dodelitev sklopov vaj z datumom (zavihek »Vaje«), vnos meritev z oceno (»Vpiši meritev«), izhodišča pred odpustom (»Podatki iz bolnišnice« → `PATCH /api/patients/[id]`), opomnik pacientu prek e-pošte (mailto) pri izostanku vnosa ≥ 3 dni, urejanje knjižnjice in standardov.
+- Zdravnik: izbira stanja iz kataloga v modalu »Nov pacient«, dodelitev sklopov vaj z datumom (zavihek »Vaje«), vnos meritev z oceno (»Vpiši meritev«), izhodišča pred odpustom (»Podatki iz bolnišnice« → `PATCH /api/patients/[id]`), opomnik pacientu prek e-pošte (mailto) pri izostanku vnosa ≥ 3 dni, urejanje knjižnjice; standardi (meje) meritev se urejajo v podrobnem pregledu posamezne meritve v zavihku **Meritve** (klik na vrsto meritve → `MetricDetail`: zgodovina + urejanje con/mej; glej spodaj). Pri izbranem stanju iz kataloga so priporočene meritve in sklopi vaj v modalu razvrščeni na vrh in označeni z oznako »Priporočeno« (`RecBadge` v `DoctorDashboardLovable.tsx`) — oznaka ostane tudi, če zdravnik izbiro spremeni; enako v zavihku »Vaje« pri obstoječem pacientu (priporočila glede na `catalogSource`). Na vrhu zavihka **Podatki** v modalu »Nov pacient« je vidni demo okvir z ZZZS številko (`DEMO_ZZZS` v `DoctorDashboardLovable.tsx`): ob vnosu te številke (ali prek gumba »Vstavi demo številko«) se ime, e-pošta, datum odpusta, kontaktna oseba in telefon samodejno izpolnijo iz »ZZZS« — **razen diagnoze**, ki ostane ročna izbira; simulacija integracije z obstoječimi sistemi (eZdravje/zVem). V zavihku **Zdravila** istega modala je še demo opomba za **zVem (e-recepti)**: zdravila se »avtomatsko prenesejo« iz centralnega registra — ob demo ZZZS številki se v obrazec prednapolnijo demo zdravila (`DEMO_ZVEM_MEDICATIONS`; samo če seznam še ni ročno polnjen), ročni dodatek ostane možen.
 
 ## Avtentikacija in vloge
 
@@ -147,7 +147,7 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 ## Grafi meritev (trend)
 
 - `components/TrendChart.tsx` — črtni graf **brez dodatnih odvisnosti** (čisti SVG): točke so meritve, črtkane črte so meje L1/L2/L3 (spodnje meje pikčaste), točka je obarvana po resnosti prekoračitve prek `evaluateThresholds` (zelena v mejah, rumena L1, oranžna L2, rdeča L3). Na voljo je kompakten način (`compact`).
-- Zdravnik vidi graf pod vsako numerično/ tlačno merijo v zavihku **Meritve** (`MetricView` v `DoctorDashboardLovable.tsx`); pacient vidi kompaktne grafe v razdelku **Zgodovina meritev** na zavihku Meritve (`History` v `PatientDashboardLovable.tsx`).
+- Zdravnik v zavihku **Meritve** (`MetricView` v `DoctorDashboardLovable.tsx`) vidi kartice vrst meritev s **kompaktnim grafom trenda** (`TrendChart compact`, samo numerične/tlačne); klik na kartico odpre podrobni pregled (`MetricDetail`): zadnjo meritev, **velik graf trenda**, celotno zgodovino te vrste in obrazec za **standarde te meritve** (cone + L1/L2/L3 zgornje/spodnje meje) — »Shrani za pacienta« prek `PATCH /api/patients/[id]` (nastavi `customized: true`), »Shrani kot standard bolnice« prek `POST /api/standards` (prikazan kot referenca »Standard bolnice«). Zavihasta **Zgodovina** in **Standardi** sta odstranjena (zgodovina je v podrobnem pregledu vsake meritve). Pacient vidi kompaktne grafe v razdelku **Zgodovina meritev** na zavihku Meritve (`History` v `PatientDashboardLovable.tsx`).
 - `prisma/seed.mjs` ustvari 10-dnevno zgodovino meritev (utrip, pritisk, temperatura, kisik, bolečina, počutje), da so grafi takoj vidni pri demo prijavi.
 
 ## AI asistent
@@ -192,7 +192,7 @@ Gre za zdravstvene podatke (GDPR): **samo sintetični (lažni) podatki**, brez p
 
 Must (implementirano): login, vnos meritev (s sliko), alarmi L1–L3, dashboard z alarmi, SOS, seed podatki.
 Should (implementirano): grafi meritev (trend — `components/TrendChart.tsx`), koledar zdravil, knjižnjica, začetni vnos pacienta, katalog stanj + AI asistent, **samodejni pregled izostalih vnosov** (alarm `IZOSTANEK_VNOSA` prek `instrumentation.ts` vsakih 15 min + ročni `POST /api/cron/missed-checkins`).
-Nice (še ne): pravo pošiljanje e-pošte (trenutno mailto), zVem integracija (stub), grafi na strani pacienta čez celoten odpust.
+Nice (še ne): pravo pošiljanje e-pošte (trenutno mailto), pravo branje receptov iz zVem (trenutno demo opomba + prednapolnitev zdravil ob demo ZZZS v modalu »Nov pacient«), grafi na strani pacienta čez celoten odpust.
 
 ## Koristni ročni testi (curl)
 

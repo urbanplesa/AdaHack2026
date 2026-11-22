@@ -57,21 +57,27 @@ Po odpustu iz bolnišnice se pacienti pogosto soočajo s pomanjkanjem zdravstven
 - AI asistent (hosted na zdravstveni infrastrukturi), ki odgovarja na vprašanja, ki za katere pacienti normalno nebi poklicali zdravnika (npr. ali grem lahko na 5km sprehod po 2 tednih za operacijo kolena?).
 - Zdravnik lahko izkluči/doda priporočila
 
+## Problem
+
+**Kaj je sploh problem?** Zdravniki nimajo nadzora nad pacienti ko te zapustijo bolnišnico, pacienti nimajo vseh informacij o okrevanju, prav tako zelo pozno dobijo fizioterapevta, zato okrevanje stagnira.
+
 ## Rešitev
 
-**Kaj je sploh problem?** Zdravniki nimajo več nadzora nad pacienti, pacienti pa nimajo vseh informacij o okrevanju.
+Rešitev je platforma, s katero zdravnik, s čim manj dela, preverja, da stanje pacienta ni kritično in pacientu poda čim več informacij o dogajanju po operaciji, te so:
+- meritve, naj ki jih pacient izvaja,
+- okvirna časovnica okrevanja,
+- priporočena prehrana,
+- priporočene fizioterapevtske vaje.
 
-Na spletni strani/aplikaciji se naredi knjižnjico meritev priporočljivih za neko bolezen/poškodbo in proporočila za dejavnosti in prehrano, ter potek okrevanja.
+Ko zdravnik doda novega pacienta, se z vnosom ZZZS številke izpolnijo vsi podatki o pacientu. 
+Nato zdravnik označi stanje oz. bolezen. Glede na to, platforma avtomatsko označi potrebne zgornje informacije, ki jih bo pacient prejel. Zdravnik lahko to sam ročno prilagodi.
+Prav tako platforma iz baze bolnišnice importira dosedanje meritve, ki so jih opravili v bolnišnici.
+Vsak tip meritve ima pričakovana, nenavadna in kritična območja podatkov. Meje se izpolnijo samodejno, a ji zdravnik lahko sam prilagodi.
 
-Pred odpustom pacienta iz bolnišinice zdravnik izbere meritve, ki naj jih pacient opravlja in zapisuje na aplikacijo/spletno stran, ter kdaj naj jih dela. Pacientu se izmeri oz. določi mejne vrednosti meritev. Pacient tudi poda kontaktno osebo za obveščanje in dostopa do knjižnjice in vnašanja podatkov. Pacient si lahko izposodi merilec (za srčni utrip, tlak, kisik, ipd.)., ter se mu pokaže kako se meritev pravilno opravi.
+Ko pacient odpre platformo, mu ta pove naj izpolni meritve, če tega ta dan še ni storil. Po opravljenih meritvah pa mu priporoči vaje za ta dan in ostale informacije o njegovem stanju. Če je bila kakšna meritev nenavadna mu priporoči posvet z zdravnikom, če je bila kritična pa klic na urgenco.
+Pacient ima možnost klepeta z Umetno inteligenco, ki mu odgovarja glede na njegove meritve in informacije.
 
-Iz portala zVem se prodobi recepte za zdravila, ki se dodajo v knjižnico - kdaj in kako se mora jemati (ob potrditvi zdravnika). Pacient si lahko vklopi obvestila na telefon, kdaj naj vzame zdravilo.
-
-Če meritev preseže mejno vrednost, se glede na presežek obvesti zdravstvenega delavca, ki pregelda opozorilo in ustrezno ukrepa, če je potrebno. Npr. če je meritev nad prvo mejno vrednostjo, jo zdravstveni delavec pregleda v enem dnevu, če čez drugo pa v eni uri. Lahko je tudi tretja, ki takoj obvesti zdravstvenega delavca, pacient pa naj takoj pokliče urgenco.
-
-V primeru nevnašnaja podatkov se sprva obvesti kontaktno osebo, kasneje še zdravnika.
-
-Ko zdravnik oceni (ali po vnaprej določenem obdobju brez nesprejemljivih meritev), da je pacient zdrav ali se okrevanje ne more poslabšati, se nadzor zaključi, pacient pa ima dostop do knjižnjice še 30 dni.
+Zdravnik ima v svojem pogledu seznam vseh pacientov, obveščen je za tiste, ki imajo kritično, nenavadno ali že tri dni neznano stanje.
 
 ## Kaj je implementirano
 
