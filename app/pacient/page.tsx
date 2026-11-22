@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import PatientDashboard from "./PatientDashboardLovable";
-import SosButton from "./SosButton";
 import Shell from "../Shell";
 
 export default async function PacientPage() {
@@ -30,9 +29,6 @@ export default async function PacientPage() {
   return (
     <Shell userName={`${user.name} · pacient`}>
       <div className="mx-auto max-w-xl">
-      <div className="mb-4 flex justify-end">
-        <SosButton />
-      </div>
       <PatientDashboard
         patientName={user.name}
         diagnosis={patient.diagnosis}

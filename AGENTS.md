@@ -40,7 +40,7 @@ Na NixOS Prisma zazna platformo `linux-nixos`, uradnih engine binarnikov zanjo n
 app/
   login/page.tsx          # prijava (client komponenta)
   Shell.tsx               # skupna lupina (logo, uporabnik, odjava prek POST /api/auth/logout)
-  pacient/page.tsx        # pacient UI (+ SOS gumb) v ozkem stolpcu (max-w-xl), po vzoru lovable projekta; knjižnjica prikazuje samo zdravnikom dodeljene vodiče (PatientExerciseSet), ne vseh ExerciseSet
+  pacient/page.tsx        # pacient UI v ozkem stolpcu (max-w-xl), po vzoru lovable projekta; knjižnjica prikazuje samo zdravnikom dodeljene vodiče (PatientExerciseSet), ne vseh ExerciseSet
   zdravnik/page.tsx       # dashboard zdravnika
   api/
     auth/login/route.ts        # POST {email,password} → httpOnly piškotek "session"=userId
@@ -139,7 +139,7 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 - **L2** — več čez mejo → zdravnik pregleda v **1 uri**
 - **L3** — kritično → **takojšnje** obvestilo; pacient mora poklicati urgenco
 - `POST /api/measurements` vrne poleg meritve tudi polje `alert` (ustvarjen oz. že obstoječi odprt alarm iste stopnje za ta načrt; `null`, če meritev ni presegla nobene meje). Pacient na to takoj reagira v UI: rdeč banner ob L3/SOS (»takoj pokličite 112«), rumen ob L2, inline opozorilo pri kartici meritve in zavihek **Alarmi** na `/pacient` z vsemi svojimi alarmi.
-- **SOS** — `POST /api/alerts {"action":"sos"}` (SOS gumb na strani pacienta) → takojšen alarm
+- **SOS** — `POST /api/alerts {"action":"sos"}` → takojšen alarm (UI gumba na strani pacienta ni več; akcija ostaja na voljo prek API)
 - **IZOSTANEK_VNOSA** — **samodejno** prek `instrumentation.ts` (ob zagonu strežnika vsakih `MISSED_CHECKINS_INTERVAL_MINUTES` minut, privzeto 15) in **ročno** prek `POST /api/cron/missed-checkins` (zaščiteno s headerjem `x-cron-secret` iz `CRON_SECRET` ali sejo zdravnika); logika v `lib/missed-checkins.ts → checkMissedCheckins()` → alarm za paciente brez vnosa meritev > 24 h; najprej kontaktna oseba, nato zdravnik
 - Potrjevanje alarma: `POST /api/alerts {"action":"acknowledge","alertId":"..."}` (samo `ZDRAVNIK`) → `status=POTRJEN`, `acknowledgedAt`, `acknowledgedBy`
 - Seznam alarmov: `GET /api/alerts` (zdravnik vidi vse, pacient svoje)
