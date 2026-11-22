@@ -29,6 +29,7 @@ export default async function PacientPage() {
 
   return (
     <Shell userName={`${user.name} · pacient`}>
+      <div className="mx-auto max-w-xl">
       <div className="mb-4 flex justify-end">
         <SosButton />
       </div>
@@ -63,6 +64,7 @@ export default async function PacientPage() {
           measurementType: a.measurement?.type ?? null,
         }))}
       />
+      </div>
     </Shell>
   );
 }

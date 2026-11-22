@@ -40,7 +40,7 @@ Na NixOS Prisma zazna platformo `linux-nixos`, uradnih engine binarnikov zanjo n
 app/
   login/page.tsx          # prijava (client komponenta)
   Shell.tsx               # skupna lupina (logo, uporabnik, odjava prek POST /api/auth/logout)
-  pacient/page.tsx        # pacient UI (+ SOS gumb); knjižnjica prikazuje samo zdravnikom dodeljene vodiče (PatientExerciseSet), ne vseh ExerciseSet
+  pacient/page.tsx        # pacient UI (+ SOS gumb) v ozkem stolpcu (max-w-xl), po vzoru lovable projekta; knjižnjica prikazuje samo zdravnikom dodeljene vodiče (PatientExerciseSet), ne vseh ExerciseSet
   zdravnik/page.tsx       # dashboard zdravnika
   api/
     auth/login/route.ts        # POST {email,password} → httpOnly piškotek "session"=userId
@@ -120,6 +120,17 @@ lovable/                  # referenčni UI projekt (izvor funkcij); izključen i
 - Strani `/pacient/*` preverijo `role === "PACIENT"`, `/zdravnik/*` pa `role === "ZDRAVNIK"`, sicer redirect na `/login`.
 - API route-i vedno preverijo sejo in vlogo (glej `app/api/measurements/route.ts` kot zgled).
 
+## Pacient UI (po vzoru lovable projekta)
+
+`/pacient` je ozk mobilni stolpec (`max-w-xl`) z enim samim klicem na `PatientDashboardLovable.tsx`:
+
+- **Hero**: `font-display` (Fraunces) »Živjo, {ime}.« + datum v slovenščini; pisavi Nunito/Fraunces prek Google Fonts `<link>` v `app/layout.tsx`; paleta v `app/globals.css` (spremenljivke `--primary`, `--warning`, …).
+- **Banner današnjih meritev**: če ima vsak `MeasurementPlan` že vnos pacienta danes → zelen »Današnje meritve so izpolnjene.«; sicer velik CTA gumb »Danes še nisi vnesel meritev, naredi to zdaj!« (oz. »…vseh meritev (x/y). Nadaljuj zdaj!«), ki skoči na zavihek Meritve. Šteje se po `plan.type` + `author=="PACIENT"` + lokalni datum `recordedAt`.
+- **Čarovnik za meritve** (`MeasurementsWizard`): ena meritev na korak (»Mer Meritve X od Y«), veliki vhodi (min-h-14, text-lg), izbire z gumbi (bolečina 0–10, Ja/Ne), emoji+simptomi za POČUTJE, dve polji za pritisk, **slider** za KISIK (80–100 %) in TEMPERATURO (35–41 °C) namesto številskega vnosa (`sliderRange`), sicer številski vnos, nalaganje slike prek `/api/upload`; vsak korak se takoj shrani prek `POST /api/measurements` (alarm pride v `alert` polju → takojšen banner). Na koncu zaslon »Super, hvala za opravljene meritve!« + **predlog vaj, ki jih lahko že dela** (dodelitve s `startDate <= danes`, s PDF in gumbom za potrditev opomnika) + gumb »Vnesi nove meritve«; zgodovina s `TrendChart` grafom je v `<details>` »Zgodovina meritev«, vnosi kategorije MERITVE pa v »Kako pravilno merim«.
+- Samo **3 tabe** (kot v lovable): **Meritve**, **Knjižnjica**, **AI asistent**. Ikone iz `lucide-react`.
+- Zavihek **Knjižnjica** (`LibraryView`) združuje vse »informativne« vsebine v razdelke s `font-display` naslovi: **Okrvanje** (vrstice z `border-b`: stranski učinki, potek, prehrana, opozorilni simptomi, alarmi + vir kataloga ter knjižnični vnosi kategorij, ki niso VAJE/MERITVE), **Tvoje vaje in navodila** (dodeljeni sklopi s startDate, PDF prek `GuideLinks`, gumb za potrditev opomnika + knjižnični vnosi kategorije VAJE), **Zdravila** (današnji odmerki s potrditvenimi checkboxi, `MedicationSchedule`). Pacient vidi samo zdravnikom dodeljene vodiče. Vnosi kategorije **MERITVE** se na zavihku Meritve prikazujejo v razširljivem razdelku »Kako pravilno merim« (`HowToMeasure`).
+- **Alarmi nimajo več svojega zavihka** — odprti L3/SOS se vedno prikazujejo v rdečem bannerju na vrhu strani (»takoj pokličite 112«), vsi ostali odprti alarmi (L1/L2/IZOSTANEK_VNOSA) pa v rumenem bannerju; takoj ob sprožitvi prek meritev se banner pojavi tudi brez osvežitve (`liveAlert`). **AI asistent** klepet prek `/api/assistant`.
+
 ## Alarm logika (jedro produkta)
 
 Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornjimi (`thresholdL1/L2/L3`) IN spodnjimi (`thresholdLowL1/L2/L3`) — glej `lib/thresholds.ts`. V potrebi ustvarimo `Alert`, brez duplikacije: če za isti plan že obstaja odprt (ODPRT) alarm iste stopnje, novega ne ustvarimo.
@@ -136,12 +147,12 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 ## Grafi meritev (trend)
 
 - `components/TrendChart.tsx` — črtni graf **brez dodatnih odvisnosti** (čisti SVG): točke so meritve, črtkane črte so meje L1/L2/L3 (spodnje meje pikčaste), točka je obarvana po resnosti prekoračitve prek `evaluateThresholds` (zelena v mejah, rumena L1, oranžna L2, rdeča L3). Na voljo je kompakten način (`compact`).
-- Zdravnik vidi graf pod vsako numerično/ tlačno merijo v zavihku **Meritve** (`MetricView` v `DoctorDashboardLovable.tsx`); pacient vidi kompakten graf nad zgodovino v svoji kartici meritve (`MeasurementCard` v `PatientDashboardLovable.tsx`).
+- Zdravnik vidi graf pod vsako numerično/ tlačno merijo v zavihku **Meritve** (`MetricView` v `DoctorDashboardLovable.tsx`); pacient vidi kompaktne grafe v razdelku **Zgodovina meritev** na zavihku Meritve (`History` v `PatientDashboardLovable.tsx`).
 - `prisma/seed.mjs` ustvari 10-dnevno zgodovino meritev (utrip, pritisk, temperatura, kisik, bolečina, počutje), da so grafi takoj vidni pri demo prijavi.
 
 ## AI asistent
 
-- Route `app/api/assistant/route.ts` (samo `PACIENT`): `GET` vrne zgodovino sporočil `PACIENT`+`ASISTENT`; `POST {text}` shrani vprašanje, pokliče LLM in shrani odgovor kot `sender: "ASISTENT"`. Oba zapisa sta v isti tabeli `ChatMessage` — zdravnik vidi celoten pogovor v svojem pogledu "Klepet".
+- Route `app/api/assistant/route.ts` (samo `PACIENT`): `GET` vrne zgodovino sporočil `PACIENT`+`ASISTENT`; `POST {text}` shrani vprašanje, pokliče LLM in shrani odgovor kot `sender: "ASISTENT"`. Oba zapisa sta v tabeli `ChatMessage` (klepet zdravnik↔pacient je odstranjen; zgodovino vidi samo pacient na zavihku **AI asistent**).
 - Konfiguracija v `.env` (Next.js jo prebere sam; že nastavljene `process.env` spremenljivke imajo prednost pred `.env`):
   - `AI_API_URL` — osnovni URL **OpenAI-compatible** endpointa (npr. `https://api.mistral.ai/v1`, `https://api.openai.com/v1`, `http://localhost:11434/v1` za Ollama, `https://api.groq.com/openai/v1`); če URL že vsebuje `/chat/completions`, se uporabi kar tako, sicer se pripne
   - `AI_API_KEY` — pošlje se kot `Authorization: Bearer …`

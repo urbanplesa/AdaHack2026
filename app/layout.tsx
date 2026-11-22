@@ -13,7 +13,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="sl">
-      <body>{children}</body>
+      <body>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700;800;900&display=swap"
+          rel="stylesheet"
+        />
+        {children}
+      </body>
     </html>
   );
 }
