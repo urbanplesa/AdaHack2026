@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 import { jsonError } from "@/lib/http";
+import { checkMissedCheckins } from "@/lib/missed-checkins";
 
-// POST — preveri paciente brez vnosa meritev v zadnjih 24 urah in ustvari
-// alarm IZOSTANEK_VNOSA (če za pacienta še ni odprtega istega alarma).
-// Zaščita: severn skrivnost (x-cron-secret) ALI seja zdravnika (za ročni demo klic).
-const MAX_HOURS_WITHOUT_INPUT = 24;
-
+// POST — ročni sprožilec pregleda izostalih vnosov (alarm IZOSTANEK_VNOSA).
+// Isti pregled teče tudi samodejno prek instrumentation.ts (vsakih
+// MISSED_CHECKINS_INTERVAL_MINUTES minut, privzeto 15) — glej lib/missed-checkins.ts.
+// Zaščita: strežniška skrivnost (x-cron-secret) ALI seja zdravnika (za ročni demo klic).
 export async function POST(req: NextRequest) {
   const secretOk =
     !!process.env.CRON_SECRET && req.headers.get("x-cron-secret") === process.env.CRON_SECRET;
@@ -16,33 +15,6 @@ export async function POST(req: NextRequest) {
     return jsonError("Ni dovoljenja", 403);
   }
 
-  const cutoff = new Date(Date.now() - MAX_HOURS_WITHOUT_INPUT * 60 * 60 * 1000);
-  const patients = await prisma.patient.findMany({
-    where: { status: "AKTIVEN" },
-    include: {
-      user: true,
-      measurements: { orderBy: { recordedAt: "desc" }, take: 1 },
-      alerts: { where: { severity: "IZOSTANEK_VNOSA", status: "ODPRT" } },
-    },
-  });
-
-  const created: string[] = [];
-  for (const patient of patients) {
-    const last = patient.measurements[0]?.recordedAt ?? null;
-    if (last && last > cutoff) continue;
-    if (patient.alerts.length > 0) continue; // že ima odprt alarm za izostanek
-    await prisma.alert.create({
-      data: {
-        patientId: patient.id,
-        severity: "IZOSTANEK_VNOSA",
-        status: "ODPRT",
-        message: last
-          ? `Pacient ${patient.user.name} ni vnesel meritev že ${Math.round((Date.now() - last.getTime()) / 3600000)} h — najprej kontaktna oseba, nato zdravnik`
-          : `Pacient ${patient.user.name} še ni nikoli vnesel meritve — preverite kontaktno osebo`,
-      },
-    });
-    created.push(patient.id);
-  }
-
-  return NextResponse.json({ checked: patients.length, createdAlerts: created.length, patientIds: created });
+  const result = await checkMissedCheckins();
+  return NextResponse.json(result);
 }

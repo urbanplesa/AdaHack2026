@@ -61,7 +61,8 @@ app/
     assistant/route.ts         # GET/POST pogovor z AI asistentom (samo PACIENT; bere knjižnico + meritve + načrte + vaje)
     medications/route.ts       # POST {medicationId,time:"HH:MM"} — preklopi današnji odmerek
     upload/route.ts            # POST multipart "file" → public/uploads/, vrne {url:"/uploads/..."}
-    cron/missed-checkins/route.ts # POST — alarmi IZOSTANEK_VNOSA (x-cron-secret ali seja ZDRAVNIK)
+    cron/missed-checkins/route.ts # POST — ročni sprožilec pregleda izostalih vnosov (x-cron-secret ali seja ZDRAVNIK); samodejni pregled teče prek instrumentation.ts
+instrumentation.ts         # Next.js hook: ob zagonu nodejs strežnika vsakih MISSED_CHECKINS_INTERVAL_MINUTES min (privzeto 15) požene checkMissedCheckins() → alarmi IZOSTANEK_VNOSA
 components/
   TrendChart.tsx          # SVG črtni graf trenda meritev z mejnimi črtami L1/L2/L3 (zgornje polne, spodnje pikčaste); točke obarvane po resnosti prek evaluateThresholds — uporablja ga zdravnikov MetricView in kartica meritve pacienta
 lib/
@@ -69,6 +70,7 @@ lib/
   auth.ts                 # getSessionUser() — prebere piškotek, vrne User
   http.ts                 # readJson() (varno branje JSON) in jsonError()
   thresholds.ts           # evaluateThresholds() — zgornje IN spodnje meje plana
+  missed-checkins.ts      # checkMissedCheckins() — alarmi IZOSTANEK_VNOSA za AKTIVNE paciente brez vnosa meritev > 24 h (brez duplikatov); kličejo jo instrumentation.ts (samodejno) in POST /api/cron/missed-checkins (ročno)
   assistant.ts            # AI asistent: konfiguracija LLM iz .env, kontekst, klic, fallback
   catalog.ts              # katalog 28 stanj (lib/catalog/conditions.json) + PDF vodiči (lib/catalog/guides.json): preslikava v tipe planov, alarmne meje, okno začetka vaj
   catalog/conditions.json # surovi katalog stanj (iz lovable projekta)
@@ -128,7 +130,7 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 - **L3** — kritično → **takojšnje** obvestilo; pacient mora poklicati urgenco
 - `POST /api/measurements` vrne poleg meritve tudi polje `alert` (ustvarjen oz. že obstoječi odprt alarm iste stopnje za ta načrt; `null`, če meritev ni presegla nobene meje). Pacient na to takoj reagira v UI: rdeč banner ob L3/SOS (»takoj pokličite 112«), rumen ob L2, inline opozorilo pri kartici meritve in zavihek **Alarmi** na `/pacient` z vsemi svojimi alarmi.
 - **SOS** — `POST /api/alerts {"action":"sos"}` (SOS gumb na strani pacienta) → takojšen alarm
-- **IZOSTANEK_VNOSA** — `POST /api/cron/missed-checkins` (zaščiteno s headerjem `x-cron-secret` iz `CRON_SECRET` ali sejo zdravnika) → alarm za paciente brez vnosa meritev > 24 h; najprej kontaktna oseba, nato zdravnik
+- **IZOSTANEK_VNOSA** — **samodejno** prek `instrumentation.ts` (ob zagonu strežnika vsakih `MISSED_CHECKINS_INTERVAL_MINUTES` minut, privzeto 15) in **ročno** prek `POST /api/cron/missed-checkins` (zaščiteno s headerjem `x-cron-secret` iz `CRON_SECRET` ali sejo zdravnika); logika v `lib/missed-checkins.ts → checkMissedCheckins()` → alarm za paciente brez vnosa meritev > 24 h; najprej kontaktna oseba, nato zdravnik
 - Potrjevanje alarma: `POST /api/alerts {"action":"acknowledge","alertId":"..."}` (samo `ZDRAVNIK`) → `status=POTRJEN`, `acknowledgedAt`, `acknowledgedBy`
 - Seznam alarmov: `GET /api/alerts` (zdravnik vidi vse, pacient svoje)
 
@@ -168,7 +170,7 @@ Seed podatki: pacient Janez Novak (stanje iz kataloga **Artroskopija kolena** �
 - Nova stran: `app/<pot>/page.tsx`; nov API: `app/api/<pot>/route.ts` (GET/POST, `NextRequest`/`NextResponse`).
 - Prisma: vedno `lib/prisma.ts` singleton, nikoli novega `PrismaClient` na roke.
 - **Pred commmit obvezno `npm run build`** in ročni smoke test (login + vnos meritve).
-- Ne commitaj: `node_modules/`, `.next/`, `.env`, `prisma/*.db*`, `public/uploads/*` (razen `.gitkeep`), `.devenv/` (vse v `.gitignore`). `.env` vsebuje `DATABASE_URL="file:./dev.db"` (relativno na mapo `prisma/`, torej `prisma/dev.db`) in prazne `AI_API_URL`/`AI_API_KEY`/`AI_MODEL` — prave vrednosti ostanejo lokalno, nikoli v gitu.
+- Ne commitaj: `node_modules/`, `.next/`, `.env`, `prisma/*.db*`, `public/uploads/*` (razen `.gitkeep`), `.devenv/` (vse v `.gitignore`). `.env` vsebuje `DATABASE_URL="file:./dev.db"` (relativno na mapo `prisma/`, torej `prisma/dev.db`) in prazne `AI_API_URL`/`AI_API_KEY`/`AI_MODEL` — prave vrednosti ostanejo lokalno, nikoli v gitu. Opcijsko še `MISSED_CHECKINS_INTERVAL_MINUTES` (interval samodejnega pregleda izostalih vnosov, privzeto 15) in `CRON_SECRET` (če je nastavljen, sme zunanjost klicati `POST /api/cron/missed-checkins` s headerjem `x-cron-secret`).
 
 ## Varnost / podatki
 
@@ -177,8 +179,8 @@ Gre za zdravstvene podatke (GDPR): **samo sintetični (lažni) podatki**, brez p
 ## Trenutni obseg (MVP za 24 h)
 
 Must (implementirano): login, vnos meritev (s sliko), alarmi L1–L3, dashboard z alarmi, SOS, seed podatki.
-Should (implementirano): grafi meritev (trend — `components/TrendChart.tsx`), koledar zdravil, knjižnjica, začetni vnos pacienta, katalog stanj + AI asistent.
-Nice (še ne): samodejni cron za izostale vnose (trenutno ročni `POST /api/cron/missed-checkins`), pravo pošiljanje e-pošte (trenutno mailto), zVem integracija (stub), grafi na strani pacienta čez celoten odpust.
+Should (implementirano): grafi meritev (trend — `components/TrendChart.tsx`), koledar zdravil, knjižnjica, začetni vnos pacienta, katalog stanj + AI asistent, **samodejni pregled izostalih vnosov** (alarm `IZOSTANEK_VNOSA` prek `instrumentation.ts` vsakih 15 min + ročni `POST /api/cron/missed-checkins`).
+Nice (še ne): pravo pošiljanje e-pošte (trenutno mailto), zVem integracija (stub), grafi na strani pacienta čez celoten odpust.
 
 ## Koristni ročni testi (curl)
 
@@ -210,6 +212,7 @@ curl -b /tmp/c.txt -X POST http://localhost:3000/api/chat \
   -H 'Content-Type: application/json' -d '{"text":"Danes sem dobro."}'
 curl -b /tmp/c.txt -X POST http://localhost:3000/api/medications \
   -H 'Content-Type: application/json' -d '{"medicationId":"<id>","time":"20:00"}'
+# ročni sprožilec pregleda izostalih vnosov (sicer samodejno vsakih 15 min prek instrumentation.ts)
 curl -b /tmp/d.txt -X POST http://localhost:3000/api/cron/missed-checkins
 # AI asistent (samo PACIENT) — brez nastavljenega AI_API_KEY dobimo fallback odgovor
 curl -b /tmp/c.txt http://localhost:3000/api/assistant
