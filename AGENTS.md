@@ -124,6 +124,7 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 - **L1** — malo čez mejo → zdravnik pregleda v **1 dnevu**
 - **L2** — več čez mejo → zdravnik pregleda v **1 uri**
 - **L3** — kritično → **takojšnje** obvestilo; pacient mora poklicati urgenco
+- `POST /api/measurements` vrne poleg meritve tudi polje `alert` (ustvarjen oz. že obstoječi odprt alarm iste stopnje za ta načrt; `null`, če meritev ni presegla nobene meje). Pacient na to takoj reagira v UI: rdeč banner ob L3/SOS (»takoj pokličite 112«), rumen ob L2, inline opozorilo pri kartici meritve in zavihek **Alarmi** na `/pacient` z vsemi svojimi alarmi.
 - **SOS** — `POST /api/alerts {"action":"sos"}` (SOS gumb na strani pacienta) → takojšen alarm
 - **IZOSTANEK_VNOSA** — `POST /api/cron/missed-checkins` (zaščiteno s headerjem `x-cron-secret` iz `CRON_SECRET` ali sejo zdravnika) → alarm za paciente brez vnosa meritev > 24 h; najprej kontaktna oseba, nato zdravnik
 - Potrjevanje alarma: `POST /api/alerts {"action":"acknowledge","alertId":"..."}` (samo `ZDRAVNIK`) → `status=POTRJEN`, `acknowledgedAt`, `acknowledgedBy`
@@ -180,7 +181,7 @@ curl -c /tmp/c.txt -X POST http://localhost:3000/api/auth/login \
   -d '{"email":"pacient@test.si","password":"pacient123"}'
 # seznam meritev
 curl -b /tmp/c.txt http://localhost:3000/api/measurements
-# vnos meritve čez L3 mejo (utrip 150) → ustvari alarm
+# vnos meritve čez L3 mejo (utrip 150) → ustvari alarm; odgovor vsebuje tudi "alert"
 curl -b /tmp/c.txt -X POST http://localhost:3000/api/measurements \
   -H 'Content-Type: application/json' \
   -d '{"type":"UTRIP","value":150,"note":"test"}'

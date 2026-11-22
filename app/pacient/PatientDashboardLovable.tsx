@@ -14,6 +14,7 @@ type ExerciseSet = { id: string; name: string; condition: string; instructions: 
 type ExerciseAssignment = { id: string; exerciseSetId: string; startDate: string; acknowledgedDate: string | null; exerciseSet: ExerciseSet };
 type Medication = { id: string; name: string; dosage: string; times: string; takenSlots: string };
 type ChatMessage = { id: string; sender: string; text: string; createdAt: string | Date };
+type PatientAlert = { id: string; severity: string; status: string; message: string; createdAt: string | Date; measurementType: string | null };
 type Care = {
   sideEffects: string | null; timeline: string | null; nutrition: string | null; exercises: string | null;
   generalRecommendations: string | null; equipment: string | null; warningSymptoms: string | null;
@@ -28,7 +29,7 @@ const todayKey = () => {
 export default function PatientDashboardLovable(props: {
   patientName: string; diagnosis: string; dischargeDate: string; care: Care;
   plans: Plan[]; measurements: Measurement[]; libraryEntries: LibraryEntry[]; exerciseSets: ExerciseSet[];
-  exerciseAssignments: ExerciseAssignment[]; medications: Medication[]; chatMessages: ChatMessage[];
+  exerciseAssignments: ExerciseAssignment[]; medications: Medication[]; chatMessages: ChatMessage[]; alerts: PatientAlert[];
 }) {
   const [tab, setTab] = useState("daily");
   const [measurements, setMeasurements] = useState(props.measurements);
@@ -39,7 +40,21 @@ export default function PatientDashboardLovable(props: {
   const [aiMessages, setAiMessages] = useState<ChatMessage[]>(props.chatMessages.filter((m) => m.sender !== "ZDRAVNIK"));
   const [aiLoading, setAiLoading] = useState(false);
   const [aiText, setAiText] = useState("");
-  const tabs = [["daily", "Počutje"], ["care", "Moj načrt"], ["measurements", "Meritve"], ["library", "Knjižnjica"], ["medications", "Zdravila"], ["chat", "Klepet"], ["ai", "AI asistent"]] as const;
+  const [liveAlert, setLiveAlert] = useState<PatientAlert | null>(null);
+  const tabs = [["daily", "Počutje"], ["alerts", "Alarmi"], ["care", "Moj načrt"], ["measurements", "Meritve"], ["library", "Knjižnjica"], ["medications", "Zdravila"], ["chat", "Klepet"], ["ai", "AI asistent"]] as const;
+
+  // Alarmi: vsi (iz strežnika) + morebitni ravnokar sprožen (še ni v props)
+  const allAlerts = useMemo(
+    () => (liveAlert && !props.alerts.some((a) => a.id === liveAlert.id) ? [liveAlert, ...props.alerts] : props.alerts),
+    [props.alerts, liveAlert],
+  );
+  const openAlerts = allAlerts.filter((a) => a.status === "ODPRT");
+  const criticalAlerts = openAlerts.filter((a) => a.severity === "L3" || a.severity === "SOS");
+  const warningAlerts = openAlerts.filter((a) => a.severity === "L2" || a.severity === "IZOSTANEK_VNOSA");
+  function handleSaved(item: Measurement & { alert?: PatientAlert | null }) {
+    setMeasurements((old) => [item, ...old]);
+    if (item.alert) setLiveAlert(item.alert);
+  }
 
   // Opomnik za vaje: sklopi s startDate <= danes, ki še niso potrjeni
   const dueExercises = useMemo(
@@ -56,6 +71,18 @@ export default function PatientDashboardLovable(props: {
 
   return <>
     <div className="mb-6 mt-3"><p className="mb-2 text-xs font-bold uppercase tracking-widest text-primary">Pot okrevanja</p><h1 className="font-display text-4xl">Dober dan, {props.patientName.split(" ")[0]}</h1><p className="mt-2 text-muted-foreground">Kako se počutite danes?</p></div>
+    {criticalAlerts.length > 0 && (
+      <section aria-label="Kritični alarm" className="mb-6 rounded-2xl border border-red-400 bg-red-50 p-5">
+        <h2 className="font-bold text-red-800">Kritično stanje — takoj pokličite 112</h2>
+        {criticalAlerts.map((a) => <p key={a.id} className="mt-2 text-sm text-red-800">{a.message}</p>)}
+      </section>
+    )}
+    {warningAlerts.length > 0 && (
+      <section aria-label="Opozorilo o meritvi" className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-5">
+        <h2 className="font-bold text-amber-900">Meritev izven varnega območja — zdravnik je obveščen</h2>
+        {warningAlerts.map((a) => <p key={a.id} className="mt-2 text-sm text-amber-800">{a.message}</p>)}
+      </section>
+    )}
     {dueExercises.length > 0 && (
       <section aria-label="Opomnik za začetek vaj" className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-5">
         <h2 className="font-bold text-amber-900">Čas je za začetek vaj</h2>
@@ -69,10 +96,11 @@ export default function PatientDashboardLovable(props: {
         <button type="button" onClick={() => dueExercises.forEach((a) => acknowledge(a.id))} className="mt-4 rounded-xl border border-amber-400 bg-white px-4 py-2 text-sm font-bold text-amber-900">Potrdi prejem opomnika</button>
       </section>
     )}
-    <nav className="mb-7 flex gap-1 overflow-x-auto border-b" aria-label="Odseki pacienta">{tabs.map(([id, label]) => <button key={id} type="button" onClick={() => setTab(id)} className={`whitespace-nowrap px-4 py-3 text-sm font-bold ${tab === id ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</nav>
-    {tab === "daily" && <DailyView diagnosis={props.diagnosis} dischargeDate={props.dischargeDate} plans={props.plans} medications={medications} />}
+    <nav className="mb-7 flex gap-1 overflow-x-auto border-b" aria-label="Odseki pacienta">{tabs.map(([id, label]) => <button key={id} type="button" onClick={() => setTab(id)} className={`whitespace-nowrap px-4 py-3 text-sm font-bold ${tab === id ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{id === "alerts" && criticalAlerts.length > 0 ? `${label} (${criticalAlerts.length})` : label}</button>)}</nav>
+    {tab === "daily" && <DailyView diagnosis={props.diagnosis} dischargeDate={props.dischargeDate} plans={props.plans} medications={medications} onAlert={setLiveAlert} />}
+    {tab === "alerts" && <PatientAlertsView alerts={allAlerts} />}
     {tab === "care" && <CareView diagnosis={props.diagnosis} care={props.care} entries={props.libraryEntries} assignments={assignments} onAcknowledge={acknowledge} />}
-    {tab === "measurements" && <Measurements plans={props.plans} measurements={measurements} onSaved={(item) => setMeasurements((old) => [item, ...old])} />}
+    {tab === "measurements" && <Measurements plans={props.plans} measurements={measurements} onSaved={handleSaved} />}
     {tab === "library" && <Library entries={props.libraryEntries} guides={props.exerciseSets} />}
     {tab === "medications" && <MedicationCalendar medications={medications} onChanged={setMedications} />}
     {tab === "chat" && <Chat messages={chatMessages} text={chatText} onText={setChatText} onSent={async () => { if (!chatText.trim()) return; const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: chatText }) }); if (res.ok) { const m = await res.json(); setChatMessages((old) => [...old, m]); setChatText(""); } }} />}
@@ -89,7 +117,7 @@ function GuideLinks({ set }: { set: ExerciseSet }) {
   </div>;
 }
 
-function DailyView({ diagnosis, dischargeDate, plans, medications }: { diagnosis: string; dischargeDate: string; plans: Plan[]; medications: Medication[] }) {
+function DailyView({ diagnosis, dischargeDate, plans, medications, onAlert }: { diagnosis: string; dischargeDate: string; plans: Plan[]; medications: Medication[]; onAlert: (a: PatientAlert) => void }) {
   const [mood, setMood] = useState(3); const [pain, setPain] = useState(2); const [symptoms, setSymptoms] = useState<string[]>([]);
   const [note, setNote] = useState(""); const [sent, setSent] = useState(false); const [error, setError] = useState("");
   const moods = ["Zelo slabo", "Slabo", "Normalno", "Dobro", "Odlično"];
@@ -103,11 +131,15 @@ function DailyView({ diagnosis, dischargeDate, plans, medications }: { diagnosis
       if (hasPocutje) {
         const text = [moods[mood - 1], ...symptoms].join(", ") + (note.trim() ? ` — ${note.trim()}` : "");
         const res = await fetch("/api/measurements", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "POCUTJE", valueText: text }) });
-        if (!res.ok) throw new Error((await res.json()).error || "Napaka");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Napaka");
+        if (data.alert) onAlert(data.alert);
       }
       if (hasBolecina) {
         const res = await fetch("/api/measurements", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "BOLECINA", value: pain }) });
-        if (!res.ok) throw new Error((await res.json()).error || "Napaka");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Napaka");
+        if (data.alert) onAlert(data.alert);
       }
       if (!hasPocutje && !hasBolecina && !note.trim()) { setError("Vnesite kaj o počutju."); return; }
       setSent(true);
@@ -147,7 +179,7 @@ function CareView({ diagnosis, care, entries, assignments, onAcknowledge }: { di
   </div>;
 }
 
-function Measurements({ plans, measurements, onSaved }: { plans: Plan[]; measurements: Measurement[]; onSaved: (m: Measurement) => void }) {
+function Measurements({ plans, measurements, onSaved }: { plans: Plan[]; measurements: Measurement[]; onSaved: (m: Measurement & { alert?: PatientAlert | null }) => void }) {
   return <div className="space-y-4">{plans.map((plan) => <MeasurementCard key={plan.id} plan={plan} history={measurements.filter((m) => m.type === plan.type).slice(0, 3)} onSaved={onSaved} />)}</div>;
 }
 function measurementDisplay(m: Measurement): string {
@@ -156,11 +188,11 @@ function measurementDisplay(m: Measurement): string {
   if (m.photoUrl) return "Naložena slika";
   return "—";
 }
-function MeasurementCard({ plan, history, onSaved }: { plan: Plan; history: Measurement[]; onSaved: (m: Measurement) => void }) {
+function MeasurementCard({ plan, history, onSaved }: { plan: Plan; history: Measurement[]; onSaved: (m: Measurement & { alert?: PatientAlert | null }) => void }) {
   const kind = plan.kind || "NUMERIC";
   const [value, setValue] = useState(""); const [sys, setSys] = useState(""); const [dia, setDia] = useState("");
   const [text, setText] = useState(""); const [yesno, setYesno] = useState(""); const [note, setNote] = useState("");
-  const [photoUrl, setPhotoUrl] = useState(""); const [status, setStatus] = useState("");
+  const [photoUrl, setPhotoUrl] = useState(""); const [status, setStatus] = useState(""); const [savedAlert, setSavedAlert] = useState<PatientAlert | null>(null);
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     let body: Record<string, unknown>;
@@ -171,8 +203,10 @@ function MeasurementCard({ plan, history, onSaved }: { plan: Plan; history: Meas
     else body = { type: plan.type, value: Number(value), note };
     const res = await fetch("/api/measurements", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await res.json();
-    if (!res.ok) { setStatus(data.error || "Shranjevanje ni uspelo"); return; }
-    onSaved(data); setValue(""); setSys(""); setDia(""); setText(""); setYesno(""); setNote(""); setPhotoUrl(""); setStatus("Meritev je shranjena.");
+    if (!res.ok) { setStatus(data.error || "Shranjevanje ni uspelo"); setSavedAlert(null); return; }
+    onSaved(data); setValue(""); setSys(""); setDia(""); setText(""); setYesno(""); setNote(""); setPhotoUrl("");
+    setSavedAlert(data.alert ?? null);
+    setStatus(data.alert ? "" : "Meritev je shranjena.");
   }
   const zones = [plan.greenZone && `Zelena: ${plan.greenZone}`, plan.yellowZone && `Rumena: ${plan.yellowZone}`, plan.redZone && `Rdeča: ${plan.redZone}`].filter(Boolean).join(" · ");
   return <article className="rounded-2xl border border-border bg-card p-5"><div className="mb-4"><h2 className="font-display text-xl">{plan.label}</h2><p className="text-sm text-muted-foreground">{plan.frequency}{plan.unit ? ` · ${plan.unit}` : ""}{plan.baseline ? ` · izhodišče: ${plan.baseline}` : ""}</p>{zones && <p className="mt-1 text-xs text-muted-foreground">{zones}</p>}</div><form onSubmit={submit} className="grid gap-3 sm:grid-cols-3">
@@ -182,7 +216,7 @@ function MeasurementCard({ plan, history, onSaved }: { plan: Plan; history: Meas
     {kind === "TEXT" && <label className="text-sm font-bold">Opis<input required type="text" value={text} onChange={(e) => setText(e.target.value)} className="mt-1 w-full rounded-lg border border-border p-3" placeholder="Npr. dobro, malo utrujen" /></label>}
     {kind === "IMAGE" && <label className="text-sm font-bold">Slika<input type="file" accept="image/jpeg,image/png,image/webp" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setStatus("Nalagam sliko…"); const fd = new FormData(); fd.append("file", f); const up = await fetch("/api/upload", { method: "POST", body: fd }); const u = await up.json(); if (!up.ok) { setStatus(u.error || "Nalaganje ni uspelo"); return; } setPhotoUrl(u.url); setStatus("Slika naložena."); }} className="mt-1 w-full rounded-lg border border-border p-2" /></label>}
     <label className="text-sm font-bold sm:col-span-2">Opomba<textarea value={note} onChange={(e) => setNote(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border border-border p-3" /></label>
-    <button className="rounded-lg bg-primary px-4 py-3 font-bold text-white sm:col-span-3" type="submit">Shrani meritev</button></form>{status && <p className="mt-3 text-sm text-muted-foreground">{status}</p>}{history.length > 0 && <div className="mt-4 border-t pt-3">{history.map((m) => <p key={m.id} className="text-sm text-muted-foreground">{new Date(m.recordedAt).toLocaleString("sl-SI")} · {measurementDisplay(m)}{m.note ? ` · ${m.note}` : ""}{m.photoUrl?.startsWith("/") && <img src={m.photoUrl} alt="Slika" className="mt-2 max-h-40 rounded-lg border border-border" />}</p>)}</div>}</article>;
+    <button className="rounded-lg bg-primary px-4 py-3 font-bold text-white sm:col-span-3" type="submit">Shrani meritev</button></form>{status && <p className="mt-3 text-sm text-muted-foreground">{status}</p>}{savedAlert && <p role="alert" className={`mt-3 text-sm font-bold ${savedAlert.severity === "L3" || savedAlert.severity === "SOS" ? "text-red-700" : "text-amber-700"}`}>Alarm {savedAlert.severity}: {savedAlert.message}{savedAlert.severity === "L3" || savedAlert.severity === "SOS" ? " — takoj pokličite 112" : ""}</p>}{history.length > 0 && <div className="mt-4 border-t pt-3">{history.map((m) => <p key={m.id} className="text-sm text-muted-foreground">{new Date(m.recordedAt).toLocaleString("sl-SI")} · {measurementDisplay(m)}{m.note ? ` · ${m.note}` : ""}{m.photoUrl?.startsWith("/") && <img src={m.photoUrl} alt="Slika" className="mt-2 max-h-40 rounded-lg border border-border" />}</p>)}</div>}</article>;
 }
 
 function Library({ entries, guides }: { entries: LibraryEntry[]; guides: ExerciseSet[] }) {
@@ -209,3 +243,9 @@ function Ai({ messages, text, onText, onSend, loading }: { messages: ChatMessage
   return <Card title="AI asistent"><p className="mb-3 text-sm text-amber-700">Odgovori asistenta so informativni in niso zdravstveni nasvet. V nujnih primerih pokličite 112.</p><div className="mb-4 max-h-96 space-y-3 overflow-y-auto">{messages.map((m) => <div key={m.id} className={`max-w-[80%] rounded-xl p-3 ${m.sender === "PACIENT" ? "ml-auto bg-secondary" : "bg-muted"}`}><p className="text-sm">{m.text}</p><p className="mt-1 text-xs text-muted-foreground">{m.sender === "ASISTENT" ? "AI asistent" : "Jaz"} · {new Date(m.createdAt).toLocaleString("sl-SI")}</p></div>)}{loading && <div className="max-w-[80%] rounded-xl bg-muted p-3"><p className="text-sm text-muted-foreground">AI asistent razmišlja…</p></div>}</div><div className="flex gap-2"><input value={text} onChange={(e) => onText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSend()} className="flex-1 rounded-lg border border-border px-3 py-3" placeholder="Vprašajte AI asistenta…" /><button type="button" onClick={onSend} disabled={loading} className="rounded-lg bg-primary px-5 py-3 font-bold text-white disabled:opacity-60">Pošlji</button></div></Card>;
 }
 function Card({ title, children }: { title: string; children: React.ReactNode }) { return <section className="rounded-2xl border border-border bg-card p-5"><h2 className="mb-3 font-display text-lg font-semibold">{title}</h2>{children}</section>; }
+
+const alertChipClass = (severity: string) => severity === "SOS" || severity === "L3" ? "bg-red-100 text-red-800" : severity === "L2" || severity === "IZOSTANEK_VNOSA" ? "bg-amber-100 text-amber-800" : "bg-secondary text-primary";
+function PatientAlertsView({ alerts }: { alerts: PatientAlert[] }) {
+  const sorted = [...alerts].sort((a, b) => (a.status === b.status ? 0 : a.status === "ODPRT" ? -1 : 1) || (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+  return <div className="space-y-3 pt-5">{sorted.length ? sorted.map((a) => <article key={a.id} className={`rounded-xl border p-4 ${a.status === "ODPRT" ? "border-primary bg-card" : "border-border bg-muted"}`}><div className="flex flex-wrap items-center justify-between gap-3"><span className={`rounded-md px-2 py-1 text-xs font-bold ${alertChipClass(a.severity)}`}>{a.severity}</span><span className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleString("sl-SI")}</span></div><p className="mt-2 text-sm">{a.message}</p>{a.measurementType && <p className="mt-1 text-xs text-muted-foreground">Meritev: {a.measurementType}</p>}<p className="mt-2 text-xs font-bold">{a.status === "ODPRT" ? "Odprt — zdravnik pregleduje" : "Potrjen s strani zdravnika"}</p>{(a.severity === "L3" || a.severity === "SOS") && a.status === "ODPRT" && <p className="mt-1 text-xs font-bold text-red-700">Nujno: pokličite 112.</p>}</article>) : <p className="py-5 text-sm text-muted-foreground">Še ni alarmov.</p>}</div>;
+}

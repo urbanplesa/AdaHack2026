@@ -95,6 +95,9 @@ export async function POST(req: NextRequest) {
 
   // Alarm logika: primerjava z mejnimi vrednostmi plana (zgorje + spodnje meje).
   // Deduplikacija: če za ta plan že obstaja odprt alarm iste stopnje, novega ne ustvarimo.
+  // V odgovoru je tudi `alert`, da pacient takoj vidi, če je meritev sprožila alarm
+  // (L3/SOS → takojšnje opozorilo »pokličite 112«, glej AGENTS.md).
+  let alert: { id: string; severity: string; status: string; message: string; createdAt: Date } | null = null;
   if (numericValue !== null) {
     const result = evaluateThresholds(plan, numericValue);
     if (result) {
@@ -106,18 +109,18 @@ export async function POST(req: NextRequest) {
           measurement: { planId: plan.id },
         },
       });
-      if (!existing) {
-        await prisma.alert.create({
+      alert =
+        existing ??
+        (await prisma.alert.create({
           data: {
             patientId: patient.id,
             measurementId: measurement.id,
             severity: result.severity,
             message: alertMessage(plan.label, plan.unit, numericValue, result.severity, result.direction),
           },
-        });
-      }
+        }));
     }
   }
 
-  return NextResponse.json(measurement, { status: 201 });
+  return NextResponse.json({ ...measurement, alert }, { status: 201 });
 }

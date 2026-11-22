@@ -17,6 +17,7 @@ export default async function PacientPage() {
       measurements: { orderBy: { recordedAt: "desc" }, take: 50, include: { plan: true } },
       medications: true,
       chatMessages: { orderBy: { createdAt: "asc" } },
+      alerts: { orderBy: { createdAt: "desc" }, include: { measurement: true } },
       exerciseAssignments: { include: { exerciseSet: true }, orderBy: { startDate: "asc" } },
     },
   });
@@ -55,6 +56,14 @@ export default async function PacientPage() {
         exerciseAssignments={patient.exerciseAssignments}
         medications={patient.medications}
         chatMessages={patient.chatMessages}
+        alerts={patient.alerts.map((a) => ({
+          id: a.id,
+          severity: a.severity,
+          status: a.status,
+          message: a.message,
+          createdAt: a.createdAt,
+          measurementType: a.measurement?.type ?? null,
+        }))}
       />
     </Shell>
   );
