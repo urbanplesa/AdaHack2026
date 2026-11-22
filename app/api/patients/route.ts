@@ -5,6 +5,8 @@ import { DEFAULT_PATIENT_PASSWORD, getSessionUser } from "@/lib/auth";
 import { jsonError, readJson } from "@/lib/http";
 import { autoExerciseStartDate, equipmentForTypes, findCatalogCondition } from "@/lib/catalog";
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 // Spoji sezname opreme brez podvajanj (ločeno z vejico, neobčutljivo na velikost črk)
 function mergeEquipment(...values: (string | null | undefined)[]): string | null {
   const parts = values
@@ -210,18 +212,34 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Sklopi vaj iz kataloga s samodejnim začetnim datumom (glede na datum posega)
+    // Sklopi vaj: če je v zahtevku eksplicitni seznam exerciseSets (iz obrazca — lahko tudi prazen),
+    // se dodeli natanko ta izbira; sicer privzeto vsi sklopi iz kataloga.
+    // Manjkajoč/neveljaven startDate se izračuna iz kataloga (Začetek vaj + datum odpusta).
     const exerciseAssignments: string[] = [];
-    if (catalog) {
-      const startDate = autoExerciseStartDate(catalog.startGuidance, dischargeDateStr);
-      for (const setId of catalog.exerciseSetIds) {
-        const set = await tx.exerciseSet.findUnique({ where: { id: setId } });
-        if (!set) continue;
-        await tx.patientExerciseSet.create({
-          data: { patientId: patient.id, exerciseSetId: setId, startDate },
-        });
-        exerciseAssignments.push(setId);
-      }
+    const explicitExercises = Array.isArray(body.exerciseSets)
+      ? (body.exerciseSets as { exerciseSetId?: unknown; startDate?: unknown }[])
+      : null;
+    const seenSets = new Set<string>();
+    const exerciseEntries: { setId: string; startDate: string }[] = explicitExercises
+      ? explicitExercises
+          .map((e) => ({
+            setId: typeof e?.exerciseSetId === "string" ? e.exerciseSetId : "",
+            startDate: typeof e?.startDate === "string" ? e.startDate : "",
+          }))
+          .filter((e) => e.setId && !seenSets.has(e.setId) && (seenSets.add(e.setId), true))
+      : catalog
+        ? catalog.exerciseSetIds.map((setId) => ({ setId, startDate: "" }))
+        : [];
+    for (const entry of exerciseEntries) {
+      const set = await tx.exerciseSet.findUnique({ where: { id: entry.setId } });
+      if (!set) continue;
+      const startDate = DATE_RE.test(entry.startDate)
+        ? entry.startDate
+        : autoExerciseStartDate(catalog?.startGuidance ?? "", dischargeDateStr) || dischargeDateStr;
+      await tx.patientExerciseSet.create({
+        data: { patientId: patient.id, exerciseSetId: entry.setId, startDate },
+      });
+      exerciseAssignments.push(entry.setId);
     }
 
     return { patientId: patient.id, email, password, exerciseAssignments };

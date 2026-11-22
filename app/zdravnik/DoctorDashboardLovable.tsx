@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import TrendChart from "@/components/TrendChart";
+import { autoExerciseStartDate } from "@/lib/catalog";
 
 type Plan = {
   id: string; type: string; label: string; unit: string; kind: string; frequency: string;
@@ -64,7 +65,7 @@ export default function DoctorDashboardLovable({ patients, userName, libraryEntr
   return <>
     <div className="mb-6 mt-3 flex flex-wrap items-end justify-between gap-4"><div><p className="mb-2 text-xs font-bold uppercase tracking-widest text-primary">Zdravnikov pregled</p><h1 className="font-display text-4xl">Moji pacienti</h1><p className="mt-2 text-sm text-muted-foreground">Spremljanje stanja in okrevanja</p></div><button type="button" onClick={() => setShowCreate(true)} className="rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white">＋ Nov pacient</button></div>
     {createdCredentials && <div role="status" className="mb-5 rounded-xl border border-primary bg-card p-4"><p className="text-sm font-bold">Pacient je dodan</p><p className="mt-2 text-sm">E-pošta: <strong>{createdCredentials.email}</strong></p><p className="text-sm">Geslo (privzeto za vse paciente): <strong>{createdCredentials.password}</strong></p><button type="button" onClick={() => setCreatedCredentials(null)} className="mt-3 text-xs font-bold text-primary">Skrij</button></div>}
-    {showCreate && <AddPatientModal onClose={() => setShowCreate(false)} onCreated={(c) => { setCreatedCredentials(c); setShowCreate(false); router.refresh(); }} />}
+    {showCreate && <AddPatientModal exerciseSets={exerciseSets} onClose={() => setShowCreate(false)} onCreated={(c) => { setCreatedCredentials(c); setShowCreate(false); router.refresh(); }} />}
     <div className="mb-6 grid grid-cols-3 divide-x border-y py-4">{[["Vsi pacienti", patients.length, "all"], ["Kritično stanje", critical, "critical"], ["Brez vnosa ≥ 3 dni", overdue, "overdue"]].map(([label, count, value]) => <button key={String(value)} type="button" onClick={() => setFilter(String(value))} className="px-3 text-left"><strong className="block text-2xl text-primary">{count}</strong><span className="text-xs text-muted-foreground">{label}</span></button>)}</div>
     <div className="grid items-start gap-7 lg:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="space-y-4"><input aria-label="Poišči pacienta" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Poišči pacienta …" className="w-full rounded-xl border border-border bg-card px-4 py-3" /><div className="flex flex-wrap gap-1">{([["all", "Vsi"], ["critical", "Kritični"], ["overdue", "Brez vnosa"]] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setFilter(value)} className={`rounded-full px-3 py-2 text-xs font-bold ${filter === value ? "bg-secondary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</div>
@@ -225,14 +226,26 @@ const metricOptions = [
   { type: "EKG", label: "EKG", unit: "", kind: "IMAGE" },
   { type: "SLIKA_RANE", label: "Slika rane / šiva", unit: "", kind: "IMAGE" },
 ];
-function AddPatientModal({ onClose, onCreated }: { onClose: () => void; onCreated: (c: { email: string; password: string }) => void }) {
+function AddPatientModal({ exerciseSets, onClose, onCreated }: { exerciseSets: ExerciseSet[]; onClose: () => void; onCreated: (c: { email: string; password: string }) => void }) {
   const [tab, setTab] = useState("profile"); const [error, setError] = useState("");
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [zzzs, setZzzs] = useState(""); const [diagnosis, setDiagnosis] = useState(""); const [dischargeDate, setDischargeDate] = useState(""); const [contactName, setContactName] = useState(""); const [contactPhone, setContactPhone] = useState("");
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
   const [catalogPick, setCatalogPick] = useState("");
   const [metrics, setMetrics] = useState<MetricDraft[]>([]); const [medications, setMedications] = useState<MedicationDraft[]>([]);
   const [sideEffects, setSideEffects] = useState(""); const [timeline, setTimeline] = useState(""); const [nutrition, setNutrition] = useState(""); const [exercises, setExercises] = useState("");
+  // Izbrani sklopi vaj: setId → datum začetka ("YYYY-MM-DD"); manualDates so ročno nastavljeni datumi
+  const [exerciseDates, setExerciseDates] = useState<Record<string, string>>({});
+  const [manualDates, setManualDates] = useState<Set<string>>(new Set());
+  const [exerciseSearch, setExerciseSearch] = useState("");
   useEffect(() => { fetch("/api/catalog").then((r) => r.json()).then(setCatalog).catch(() => { }); }, []);
+  const pickedGuidance = () => catalog?.conditions.find((c) => c.condition === catalogPick)?.startGuidance;
+  const autoDateFor = (guidance: string | undefined, discharge: string) =>
+    autoExerciseStartDate(guidance ?? "", discharge || null) || discharge || todayKey();
+  // Ob spremembi datuma odpusta preračunaj samodejne datume začetka (ročne ostanejo)
+  function refreshAutoDates(discharge: string) {
+    const auto = autoDateFor(pickedGuidance(), discharge);
+    setExerciseDates((old) => Object.fromEntries(Object.keys(old).map((id) => [id, manualDates.has(id) ? old[id] : auto])));
+  }
   function pickCondition(condition: string) {
     setCatalogPick(condition);
     const c = catalog?.conditions.find((x) => x.condition === condition);
@@ -240,6 +253,19 @@ function AddPatientModal({ onClose, onCreated }: { onClose: () => void; onCreate
     setDiagnosis(c.condition);
     setMetrics(c.plans.map((p) => ({ type: p.type, label: p.label, unit: p.unit, kind: p.kind, frequency: p.frequency, baseline: "", baselineDate: "", customized: false, greenZone: p.greenZone ?? "", yellowZone: p.yellowZone ?? "", redZone: p.redZone ?? "", thresholdL2: p.thresholdL2 ?? null, thresholdL3: p.thresholdL3 ?? null, thresholdLowL2: p.thresholdLowL2 ?? null, thresholdLowL3: p.thresholdLowL3 ?? null })));
     setSideEffects(c.sideEffects); setTimeline(c.timeline); setNutrition(c.nutrition);
+    // Sklopi vaj iz kataloga so vnaprej izbrani z izračunanim začetnim datumom (kot v lovable)
+    const selected = c.exerciseSetIds.filter((id) => exerciseSets.some((s) => s.id === id));
+    const auto = autoDateFor(c.startGuidance, dischargeDate);
+    setExerciseDates(Object.fromEntries(selected.map((id) => [id, auto])));
+    setManualDates(new Set());
+  }
+  function toggleExercise(id: string, checked: boolean) {
+    if (checked) {
+      setExerciseDates((old) => ({ ...old, [id]: old[id] ?? autoDateFor(pickedGuidance(), dischargeDate) }));
+    } else {
+      setExerciseDates((old) => { const next = { ...old }; delete next[id]; return next; });
+      setManualDates((old) => { const next = new Set(old); next.delete(id); return next; });
+    }
   }
   function toggleMetric(option: (typeof metricOptions)[number]) {
     setCatalogPick("");
@@ -249,7 +275,7 @@ function AddPatientModal({ onClose, onCreated }: { onClose: () => void; onCreate
     event.preventDefault(); setError("");
     if (!name.trim() || !diagnosis.trim()) { setError("Ime in diagnoza sta obvezna."); setTab("profile"); return; }
     try {
-      const response = await fetch("/api/patients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, zzzs, diagnosis, dischargeDate, contactName, contactPhone, metrics, medications: medications.map((m) => ({ ...m, times: m.times.split(/[,; ]+/).map((v) => v.trim()).filter(Boolean) })), sideEffects, timeline, nutrition, exercises }) });
+      const response = await fetch("/api/patients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, zzzs, diagnosis, dischargeDate, contactName, contactPhone, metrics, medications: medications.map((m) => ({ ...m, times: m.times.split(/[,; ]+/).map((v) => v.trim()).filter(Boolean) })), exerciseSets: Object.entries(exerciseDates).map(([exerciseSetId, startDate]) => ({ exerciseSetId, startDate })), sideEffects, timeline, nutrition, exercises }) });
       const data = await response.json();
       if (!response.ok) { setError(data.error || "Dodajanje pacienta ni uspelo"); return; }
       onCreated({ email: data.email, password: data.password });
@@ -258,7 +284,7 @@ function AddPatientModal({ onClose, onCreated }: { onClose: () => void; onCreate
   const picked = catalog?.conditions.find((c) => c.condition === catalogPick);
   return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" role="dialog" aria-modal="true"><form onSubmit={submit} className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-card shadow-xl">
     <header className="flex items-start justify-between border-b px-6 py-5"><div><h2 className="font-display text-2xl">Nov pacient</h2><p className="mt-1 text-sm text-muted-foreground">Podatki pacienta in načrt spremljanja</p></div><button type="button" onClick={onClose} className="text-xl text-muted-foreground" aria-label="Zapri">×</button></header>
-    <nav className="flex gap-1 overflow-x-auto border-b px-6">{[["profile", "Podatki"], ["metrics", "Meritve"], ["medications", "Zdravila"], ["care", "Okrevanje"]].map(([value, label]) => <button key={value} type="button" onClick={() => setTab(value)} className={`px-3 py-3 text-sm font-bold ${tab === value ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</nav>
+    <nav className="flex gap-1 overflow-x-auto border-b px-6">{[["profile", "Podatki"], ["metrics", "Meritve"], ["exercises", "Vaje"], ["medications", "Zdravila"], ["care", "Okrevanje"]].map(([value, label]) => <button key={value} type="button" onClick={() => setTab(value)} className={`px-3 py-3 text-sm font-bold ${tab === value ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</nav>
     <div className="overflow-y-auto px-6 py-5">
       <div className={tab === "profile" ? "grid gap-4 sm:grid-cols-2" : "hidden"}>
         <label className="block text-sm font-bold">Stanje iz kataloga (samodejna nastavitev)<select value={catalogPick} onChange={(e) => pickCondition(e.target.value)} className={`${field} mt-2`}><option value="">— ročni vnos diagnoze —</option>{catalog?.conditions.map((c) => <option key={c.condition} value={c.condition}>{c.condition}</option>)}</select></label>
@@ -267,7 +293,7 @@ function AddPatientModal({ onClose, onCreated }: { onClose: () => void; onCreate
         <label className="block text-sm font-bold">Ime in priimek *<input autoFocus value={name} onChange={(e) => setName(e.target.value)} className={`${field} mt-2`} /></label>
         <label className="block text-sm font-bold">E-pošta<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={`${field} mt-2`} placeholder="pacient@example.com" /></label>
         <label className="block text-sm font-bold">ZZZS številka<input value={zzzs} onChange={(e) => setZzzs(e.target.value)} className={`${field} mt-2`} /></label>
-        <label className="block text-sm font-bold">Datum odpusta<input type="date" value={dischargeDate} onChange={(e) => setDischargeDate(e.target.value)} className={`${field} mt-2`} /></label>
+        <label className="block text-sm font-bold">Datum odpusta<input type="date" value={dischargeDate} onChange={(e) => { setDischargeDate(e.target.value); refreshAutoDates(e.target.value); }} className={`${field} mt-2`} /></label>
         <label className="block text-sm font-bold">Kontaktna oseba<input value={contactName} onChange={(e) => setContactName(e.target.value)} className={`${field} mt-2`} /></label>
         <label className="block text-sm font-bold sm:col-span-2">Telefon kontaktne osebe<input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className={`${field} mt-2`} /></label>
       </div>
@@ -276,6 +302,20 @@ function AddPatientModal({ onClose, onCreated }: { onClose: () => void; onCreate
         <div className="grid gap-2 sm:grid-cols-2">{metricOptions.map((option) => { const enabled = metrics.some((m) => m.type === option.type); return <label key={option.type} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm ${enabled ? "border-primary bg-secondary" : "border-border"}`}><input type="checkbox" checked={enabled} onChange={() => toggleMetric(option)} />{option.label}</label>; })}</div>
         {metrics.map((metric, index) => <fieldset key={metric.type} className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2"><legend className="px-2 text-sm font-bold">{metric.label}</legend><label className="text-sm">Izhodiščna vrednost<input value={metric.baseline} onChange={(e) => setMetrics((c) => c.map((m, i) => i === index ? { ...m, baseline: e.target.value } : m))} className={`${field} mt-1`} /></label><label className="text-sm">Datum izhodišča<input type="date" value={metric.baselineDate} onChange={(e) => setMetrics((c) => c.map((m, i) => i === index ? { ...m, baselineDate: e.target.value } : m))} className={`${field} mt-1`} /></label><label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={metric.customized} onChange={(e) => setMetrics((c) => c.map((m, i) => i === index ? { ...m, customized: e.target.checked } : m))} />Prilagodi meje temu pacientu</label>{metric.customized && (["greenZone", "yellowZone", "redZone"] as const).map((key) => <label key={key} className="text-sm">{key === "greenZone" ? "Zelena" : key === "yellowZone" ? "Rumena" : "Rdeča"}<input value={metric[key]} onChange={(e) => setMetrics((c) => c.map((m, i) => i === index ? { ...m, [key]: e.target.value } : m))} className={`${field} mt-1`} /></label>)}
         </fieldset>)}
+      </div>
+      <div className={tab === "exercises" ? "space-y-3" : "hidden"}>
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-bold">Sklopi vaj in navodila</p><span className="text-xs text-muted-foreground">Izbrano: {Object.keys(exerciseDates).length}</span></div>
+        {catalogPick && <p className="text-xs text-muted-foreground">Za stanje iz kataloga so sklopi vnaprej izbrani (začetek vaj: {pickedGuidance() || "po navodilu"}) — izbiro in datume lahko prilagodite.</p>}
+        <input aria-label="Poišči sklop vaj" value={exerciseSearch} onChange={(e) => setExerciseSearch(e.target.value)} placeholder="Poišči sklop ali navodilo …" className={field} />
+        <div className="space-y-2">{exerciseSets.filter((s) => `${s.name} ${s.condition}`.toLocaleLowerCase("sl").includes(exerciseSearch.toLocaleLowerCase("sl"))).map((s) => {
+          const checked = exerciseDates[s.id] !== undefined;
+          return <div key={s.id} className={`rounded-xl border p-3 ${checked ? "border-primary bg-secondary" : "border-border"}`}>
+            <label className="flex cursor-pointer items-start gap-3"><input type="checkbox" aria-label={s.name} checked={checked} onChange={(e) => toggleExercise(s.id, e.target.checked)} className="mt-1 accent-primary" /><span className="min-w-0"><span className="block text-sm font-bold">{s.name}</span><span className="block text-xs text-muted-foreground">{s.kind === "exam" ? "Preiskava" : s.kind === "advice" ? "Priporočila" : "Vaje"}{s.condition ? ` · ${s.condition}` : ""}{s.pages ? ` · ${s.pages} str.` : ""}</span></span></label>
+            {s.pdfUrl && <p className="mt-1"><a href={s.pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary underline">PDF</a>{s.sourceUrl && <a href={s.sourceUrl} target="_blank" rel="noreferrer" className="ml-2 text-xs text-muted-foreground underline">izvirni vir</a>}</p>}
+            {checked && <label className="mt-2 block text-xs font-bold">Datum začetka<input type="date" aria-label={`Datum začetka: ${s.name}`} value={exerciseDates[s.id]} onChange={(e) => { const v = e.target.value; setExerciseDates((old) => ({ ...old, [s.id]: v })); if (v) setManualDates((old) => new Set(old).add(s.id)); }} className={`${field} mt-1`} /></label>}
+          </div>;
+        })}</div>
+        {!exerciseSets.length && <p className="text-sm text-muted-foreground">Ni sklopov vaj.</p>}
       </div>
       <div className={tab === "medications" ? "space-y-4" : "hidden"}>
         <button type="button" onClick={() => setMedications((c) => [...c, { name: "", dosage: "", times: "", duration: "", note: "" }])} className="rounded-xl border px-4 py-2 text-sm font-bold text-primary">＋ Dodaj zdravilo</button>

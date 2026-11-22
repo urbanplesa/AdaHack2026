@@ -26,7 +26,6 @@ export default async function PacientPage() {
   const libraryEntries = await prisma.libraryEntry.findMany({
     orderBy: [{ category: "asc" }, { title: "asc" }],
   });
-  const exerciseSets = await prisma.exerciseSet.findMany({ orderBy: { id: "asc" } });
 
   return (
     <Shell userName={`${user.name} · pacient`}>
@@ -52,7 +51,6 @@ export default async function PacientPage() {
         plans={patient.plans}
         measurements={patient.measurements}
         libraryEntries={libraryEntries}
-        exerciseSets={exerciseSets}
         exerciseAssignments={patient.exerciseAssignments}
         medications={patient.medications}
         chatMessages={patient.chatMessages}

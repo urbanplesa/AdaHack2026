@@ -40,13 +40,13 @@ Na NixOS Prisma zazna platformo `linux-nixos`, uradnih engine binarnikov zanjo n
 app/
   login/page.tsx          # prijava (client komponenta)
   Shell.tsx               # skupna lupina (logo, uporabnik, odjava prek POST /api/auth/logout)
-  pacient/page.tsx        # pacient UI (+ SOS gumb)
+  pacient/page.tsx        # pacient UI (+ SOS gumb); knjižnjica prikazuje samo zdravnikom dodeljene vodiče (PatientExerciseSet), ne vseh ExerciseSet
   zdravnik/page.tsx       # dashboard zdravnika
   api/
     auth/login/route.ts        # POST {email,password} → httpOnly piškotek "session"=userId
     auth/logout/route.ts       # POST → počisti sejo, redirect na /login
     measurements/route.ts      # GET seznam; POST vnos meritve (glede na plan.kind) + alarm logika; ZDRAVNIK lahko vnaša s patientId + severity
-    patients/route.ts          # GET seznam / POST nov pacient (če je diagnoza v katalogu, se načrti+priporočila+vaje nastavijo samodejno); ZDRAVNIK
+    patients/route.ts          # GET seznam / POST nov pacient {…, exerciseSets:[{exerciseSetId,startDate}]} — vaje iz obrazca (če katalog, so vnaprej izbrani sklopi z izračunanim začetkom); če exerciseSets manjka, privzeto vsi sklopi iz kataloga; ZDRAVNIK
     patients/[id]/route.ts     # PATCH — podatki pacienta, sinhronizacija načrtov (baseline/meje), zdravila, dodelitve vaj; ZDRAVNIK
     patients/[id]/exercises/route.ts # GET/POST/DELETE dodelitve sklopov vaj (startDate "YYYY-MM-DD")
     exercise-sets/route.ts     # GET vsi sklopi / POST nov sklop (ZDRAVNIK)

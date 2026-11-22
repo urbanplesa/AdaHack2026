@@ -29,7 +29,7 @@ const todayKey = () => {
 
 export default function PatientDashboardLovable(props: {
   patientName: string; diagnosis: string; dischargeDate: string; care: Care;
-  plans: Plan[]; measurements: Measurement[]; libraryEntries: LibraryEntry[]; exerciseSets: ExerciseSet[];
+  plans: Plan[]; measurements: Measurement[]; libraryEntries: LibraryEntry[];
   exerciseAssignments: ExerciseAssignment[]; medications: Medication[]; chatMessages: ChatMessage[]; alerts: PatientAlert[];
 }) {
   const [tab, setTab] = useState("daily");
@@ -100,7 +100,7 @@ export default function PatientDashboardLovable(props: {
     {tab === "alerts" && <PatientAlertsView alerts={allAlerts} />}
     {tab === "care" && <CareView diagnosis={props.diagnosis} care={props.care} entries={props.libraryEntries} assignments={assignments} onAcknowledge={acknowledge} />}
     {tab === "measurements" && <Measurements plans={props.plans} measurements={measurements} onSaved={handleSaved} />}
-    {tab === "library" && <Library entries={props.libraryEntries} guides={props.exerciseSets} />}
+    {tab === "library" && <Library entries={props.libraryEntries} guides={assignments.map((a) => a.exerciseSet)} />}
     {tab === "medications" && <MedicationCalendar medications={medications} onChanged={setMedications} />}
     {tab === "ai" && <Ai messages={aiMessages} text={aiText} onText={setAiText} loading={aiLoading} onSend={async () => { if (!aiText.trim() || aiLoading) return; const text = aiText.trim(); setAiText(""); setAiLoading(true); try { const res = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) }); if (res.ok) { const data = await res.json(); setAiMessages((old) => [...old, data.userMessage, data.assistantMessage]); } } finally { setAiLoading(false); } }} />}
   </>;
@@ -221,7 +221,7 @@ function MeasurementCard({ plan, history, onSaved }: { plan: Plan; history: Meas
 function Library({ entries, guides }: { entries: LibraryEntry[]; guides: ExerciseSet[] }) {
   const categories = useMemo(() => Array.from(new Set(entries.map((e) => e.category))), [entries]);
   return <div className="grid gap-4 md:grid-cols-2">{categories.map((category) => <Card key={category} title={category.replaceAll("_", " ")}><div className="space-y-4">{entries.filter((e) => e.category === category).map((e) => <article key={e.id}><h3 className="font-bold">{e.title}</h3><p className="mt-1 text-sm text-muted-foreground">{e.content}</p>{e.url && <a href={e.url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-bold text-primary underline">Odpri dokument</a>}</article>)}</div></Card>)}
-    <Card title="Vadbeni vodiči (PDF)"><div className="space-y-4">{guides.map((g) => <article key={g.id}><h3 className="text-sm font-bold">{g.name}</h3><GuideLinks set={g} /></article>)}</div></Card>
+    <Card title="Dodeljeni vodiči (PDF)">{guides.length ? <div className="space-y-4">{guides.map((g) => <article key={g.id}><h3 className="text-sm font-bold">{g.name}</h3><GuideLinks set={g} /></article>)}</div> : <p className="text-sm text-muted-foreground">Zdravnik vam še ni dodelil vadbenih vodičev.</p>}</Card>
   </div>;
 }
 function safeTimes(value: string) { try { return JSON.parse(value) as string[]; } catch { return [value]; } }
