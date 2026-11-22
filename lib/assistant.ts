@@ -32,7 +32,9 @@ Odgovarjaj V SLOVENŠČINI, kratko, jasno in prijazno — piši za laika.
 Nisi zdravnik: ne postavljaš diagnoz in ne predpisuješ zdravil. Če odgovor zadeva zdravstveno stanje, na koncu na kratko opomni, da gre za informativno podporo, in svetuj stik z zdravnikom; v nujnih primerih naj pacient pokliče 112.
 Če so v kontekstu odprti alarmi (L3, SOS) ali meritve izven rdeče cone, to jasno izpostavi na začetku odgovora.
 Kadar je relevantno, se sklicuj na konkretne podatke iz konteksta (zadnje meritve, mejne vrednosti merilnih načrtov, članke iz knjižnice) in povej, na kaj se sklicuješ.
-Ne izmišljuj podatkov, ki niso v kontekstu.`;
+Ne izmišljuj podatkov, ki niso v kontekstu.
+Odgovarjaj IZKLUČNO z navadnim besedilom (plain text): brez kakršnegakoli markdown oblikovanja (krepko, ležeče, naslovi, črtkano, koda, seznami) in brez emoji — samo čisti tekst, odstavke loči s prazno vrstico.
+Odgovarjaj samo na zadnje vprašanje pacienta; prejšnja sporočila v pogovoru so zgolj kontekst.`;
 
 type PlanRow = {
   label: string;
@@ -156,6 +158,22 @@ async function buildContext(patientId: string): Promise<string> {
   return lines.join("\n");
 }
 
+// Garantija, da odgovor nikoli ne vsebuje markdowna/emoji (UI prikazuje čisto besedilo)
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu, "")
+    .replace(/```/g, "")
+    .replace(/(\*\*|__)([\s\S]*?)\1/g, "$2")
+    .replace(/(\*|_)([^*_]*?)\1/g, "$2")
+    .replace(/~~([\s\S]*?)~~/g, "$1")
+    .replace(/`([^`]*)`/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 // Vrne odgovor asistenta. Zgodovina (PACIENT + ASISTENT) se prebere iz baze —
 // klicalec naj pred tem že shrani novo sporočilo pacienta.
 export async function askAssistant(patientId: string): Promise<string> {
@@ -168,7 +186,8 @@ export async function askAssistant(patientId: string): Promise<string> {
   const context = await buildContext(patientId);
   const history = await prisma.chatMessage.findMany({
     where: { patientId, sender: { in: ["PACIENT", "ASISTENT"] } },
-    orderBy: { createdAt: "desc" },
+    // id kot vezivo: pri enakih createdAt (npr. seed/testi v isti milisekundi) je vrstni red sicer nedeterminističen
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: HISTORY_LIMIT,
   });
   const messages = [
@@ -211,7 +230,7 @@ export async function askAssistant(patientId: string): Promise<string> {
       console.error("[assistant] LLM je vrnil prazen odgovor");
       return ASSISTANT_FALLBACK;
     }
-    return content.trim();
+    return stripMarkdown(content);
   } catch (err) {
     console.error("[assistant] klic LLM ni uspel:", err);
     return ASSISTANT_FALLBACK;

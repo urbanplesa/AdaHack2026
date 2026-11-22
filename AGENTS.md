@@ -144,11 +144,13 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 
 - Route `app/api/assistant/route.ts` (samo `PACIENT`): `GET` vrne zgodovino sporočil `PACIENT`+`ASISTENT`; `POST {text}` shrani vprašanje, pokliče LLM in shrani odgovor kot `sender: "ASISTENT"`. Oba zapisa sta v isti tabeli `ChatMessage` — zdravnik vidi celoten pogovor v svojem pogledu "Klepet".
 - Konfiguracija v `.env` (Next.js jo prebere sam; že nastavljene `process.env` spremenljivke imajo prednost pred `.env`):
-  - `AI_API_URL` — osnovni URL **OpenAI-compatible** endpointa (npr. `https://api.openai.com/v1`, `http://localhost:11434/v1` za Ollama, `https://api.groq.com/openai/v1`); če URL že vsebuje `/chat/completions`, se uporabi kar tako, sicer se pripne
+  - `AI_API_URL` — osnovni URL **OpenAI-compatible** endpointa (npr. `https://api.mistral.ai/v1`, `https://api.openai.com/v1`, `http://localhost:11434/v1` za Ollama, `https://api.groq.com/openai/v1`); če URL že vsebuje `/chat/completions`, se uporabi kar tako, sicer se pripne
   - `AI_API_KEY` — pošlje se kot `Authorization: Bearer …`
   - `AI_MODEL` — npr. `gpt-4o-mini`, `llama3.1`
 - Če katera od treh manjka ali klic spodleti (timeout 30 s, HTTP napaka, prazen odgovor), asistent vrne fallback sporočilo (`ASSISTANT_FALLBACK` v `lib/assistant.ts`) in ga normalno shrani — UI/demo ne crkne brez ključa.
 - Zahteva na LLM: `POST {AI_API_URL}/chat/completions` z `{model, messages, max_tokens: 600, temperature: 0.3}`, brez streamanja.
+- **Zgodovina v LLM gre vedno kronološko** (najstarejše najprej, zadnje sporočilo = aktualno vprašanje pacienta): `orderBy [{createdAt desc}, {id desc}]` (id kot vezivo pri enakih časih) + `take 12` + `reverse()`. Vloga: `PACIENT`→`user`, `ASISTENT`→`assistant`, na začetku pa `system` s kontekstom.
+- **Odgovori so vedno čisto besedilo (plain text)**: sistemski prompt prepoveduje markdown/emoji, poleg tega pa `stripMarkdown()` v `lib/assistant.ts` iz odgovora LLM še naknadno odstrani morebitne ostanke (`**`, `*`, `_`, `#`, seznamske alineje, povezave, emoji). Sistemski prompt tudi naroča, naj asistent odgovarja samo na zadnje vprašanje.
 - Kontekst (`lib/assistant.ts → buildContext`): diagnoza + datum odpusta, vsi merilni načrti z mejami (L1/L2/L3, spodnje meje, barvne cone), zadnjih **20 meritev** z enoto in opombo, odprti alarmi, **vsi vnosi knjižnice**; plus zadnjih **12 sporočil** pogovora. Sistemski prompt: odgovori v slovenščini, kratko, z disclaimerjem (ni zdravnik, nujno 112) in s sklicevanjem na podatke iz konteksta.
 
 ## Demo računi in podatki
