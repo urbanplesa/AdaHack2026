@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import TrendChart from "@/components/TrendChart";
 
 type Plan = {
   id: string; type: string; label: string; unit: string; frequency: string; kind: string;
@@ -180,7 +181,7 @@ function CareView({ diagnosis, care, entries, assignments, onAcknowledge }: { di
 }
 
 function Measurements({ plans, measurements, onSaved }: { plans: Plan[]; measurements: Measurement[]; onSaved: (m: Measurement & { alert?: PatientAlert | null }) => void }) {
-  return <div className="space-y-4">{plans.map((plan) => <MeasurementCard key={plan.id} plan={plan} history={measurements.filter((m) => m.type === plan.type).slice(0, 3)} onSaved={onSaved} />)}</div>;
+  return <div className="space-y-4">{plans.map((plan) => <MeasurementCard key={plan.id} plan={plan} history={measurements.filter((m) => m.type === plan.type)} onSaved={onSaved} />)}</div>;
 }
 function measurementDisplay(m: Measurement): string {
   if (m.value !== null) return `${m.value}`;
@@ -209,14 +210,15 @@ function MeasurementCard({ plan, history, onSaved }: { plan: Plan; history: Meas
     setStatus(data.alert ? "" : "Meritev je shranjena.");
   }
   const zones = [plan.greenZone && `Zelena: ${plan.greenZone}`, plan.yellowZone && `Rumena: ${plan.yellowZone}`, plan.redZone && `Rdeča: ${plan.redZone}`].filter(Boolean).join(" · ");
-  return <article className="rounded-2xl border border-border bg-card p-5"><div className="mb-4"><h2 className="font-display text-xl">{plan.label}</h2><p className="text-sm text-muted-foreground">{plan.frequency}{plan.unit ? ` · ${plan.unit}` : ""}{plan.baseline ? ` · izhodišče: ${plan.baseline}` : ""}</p>{zones && <p className="mt-1 text-xs text-muted-foreground">{zones}</p>}</div><form onSubmit={submit} className="grid gap-3 sm:grid-cols-3">
+  const numericHistory = history.filter((m) => m.value !== null);
+  return <article className="rounded-2xl border border-border bg-card p-5"><div className="mb-4"><h2 className="font-display text-xl">{plan.label}</h2><p className="text-sm text-muted-foreground">{plan.frequency}{plan.unit ? ` · ${plan.unit}` : ""}{plan.baseline ? ` · izhodišče: ${plan.baseline}` : ""}</p>{zones && <p className="mt-1 text-xs text-muted-foreground">{zones}</p>}</div>{(kind === "NUMERIC" || kind === "PRESSURE") && numericHistory.length > 0 && <div className="mb-4 rounded-xl border border-border p-3"><TrendChart compact points={numericHistory.map((m) => ({ id: m.id, value: m.value as number, recordedAt: String(m.recordedAt) }))} unit={plan.unit} thresholds={{ l1: plan.thresholdL1, l2: plan.thresholdL2, l3: plan.thresholdL3, lowL1: plan.thresholdLowL1, lowL2: plan.thresholdLowL2, lowL3: plan.thresholdLowL3 }} /></div>}<form onSubmit={submit} className="grid gap-3 sm:grid-cols-3">
     {kind === "NUMERIC" && <label className="text-sm font-bold">Vrednost<input required type="number" step="0.1" value={value} onChange={(e) => setValue(e.target.value)} className="mt-1 w-full rounded-lg border border-border p-3" placeholder={plan.unit} /></label>}
     {kind === "PRESSURE" && <><label className="text-sm font-bold">Sistolični<input required type="number" value={sys} onChange={(e) => setSys(e.target.value)} className="mt-1 w-full rounded-lg border border-border p-3" placeholder="120" /></label><label className="text-sm font-bold">Diastolični<input required type="number" value={dia} onChange={(e) => setDia(e.target.value)} className="mt-1 w-full rounded-lg border border-border p-3" placeholder="80" /></label></>}
     {kind === "YESNO" && <label className="text-sm font-bold">Odgovor<select required value={yesno} onChange={(e) => setYesno(e.target.value)} className="mt-1 w-full rounded-lg border border-border p-3"><option value="">Izberite…</option><option value="Ja">Ja</option><option value="Ne">Ne</option></select></label>}
     {kind === "TEXT" && <label className="text-sm font-bold">Opis<input required type="text" value={text} onChange={(e) => setText(e.target.value)} className="mt-1 w-full rounded-lg border border-border p-3" placeholder="Npr. dobro, malo utrujen" /></label>}
     {kind === "IMAGE" && <label className="text-sm font-bold">Slika<input type="file" accept="image/jpeg,image/png,image/webp" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setStatus("Nalagam sliko…"); const fd = new FormData(); fd.append("file", f); const up = await fetch("/api/upload", { method: "POST", body: fd }); const u = await up.json(); if (!up.ok) { setStatus(u.error || "Nalaganje ni uspelo"); return; } setPhotoUrl(u.url); setStatus("Slika naložena."); }} className="mt-1 w-full rounded-lg border border-border p-2" /></label>}
     <label className="text-sm font-bold sm:col-span-2">Opomba<textarea value={note} onChange={(e) => setNote(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border border-border p-3" /></label>
-    <button className="rounded-lg bg-primary px-4 py-3 font-bold text-white sm:col-span-3" type="submit">Shrani meritev</button></form>{status && <p className="mt-3 text-sm text-muted-foreground">{status}</p>}{savedAlert && <p role="alert" className={`mt-3 text-sm font-bold ${savedAlert.severity === "L3" || savedAlert.severity === "SOS" ? "text-red-700" : "text-amber-700"}`}>Alarm {savedAlert.severity}: {savedAlert.message}{savedAlert.severity === "L3" || savedAlert.severity === "SOS" ? " — takoj pokličite 112" : ""}</p>}{history.length > 0 && <div className="mt-4 border-t pt-3">{history.map((m) => <p key={m.id} className="text-sm text-muted-foreground">{new Date(m.recordedAt).toLocaleString("sl-SI")} · {measurementDisplay(m)}{m.note ? ` · ${m.note}` : ""}{m.photoUrl?.startsWith("/") && <img src={m.photoUrl} alt="Slika" className="mt-2 max-h-40 rounded-lg border border-border" />}</p>)}</div>}</article>;
+    <button className="rounded-lg bg-primary px-4 py-3 font-bold text-white sm:col-span-3" type="submit">Shrani meritev</button></form>{status && <p className="mt-3 text-sm text-muted-foreground">{status}</p>}{savedAlert && <p role="alert" className={`mt-3 text-sm font-bold ${savedAlert.severity === "L3" || savedAlert.severity === "SOS" ? "text-red-700" : "text-amber-700"}`}>Alarm {savedAlert.severity}: {savedAlert.message}{savedAlert.severity === "L3" || savedAlert.severity === "SOS" ? " — takoj pokličite 112" : ""}</p>}{history.length > 0 && <div className="mt-4 border-t pt-3">{history.slice(0, 3).map((m) => <p key={m.id} className="text-sm text-muted-foreground">{new Date(m.recordedAt).toLocaleString("sl-SI")} · {measurementDisplay(m)}{m.note ? ` · ${m.note}` : ""}{m.photoUrl?.startsWith("/") && <img src={m.photoUrl} alt="Slika" className="mt-2 max-h-40 rounded-lg border border-border" />}</p>)}</div>}</article>;
 }
 
 function Library({ entries, guides }: { entries: LibraryEntry[]; guides: ExerciseSet[] }) {

@@ -14,7 +14,7 @@ export default async function PacientPage() {
     where: { userId: user.id },
     include: {
       plans: { orderBy: { label: "asc" } },
-      measurements: { orderBy: { recordedAt: "desc" }, take: 50, include: { plan: true } },
+      measurements: { orderBy: { recordedAt: "desc" }, take: 200, include: { plan: true } },
       medications: true,
       chatMessages: { orderBy: { createdAt: "asc" } },
       alerts: { orderBy: { createdAt: "desc" }, include: { measurement: true } },

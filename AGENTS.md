@@ -62,6 +62,8 @@ app/
     medications/route.ts       # POST {medicationId,time:"HH:MM"} — preklopi današnji odmerek
     upload/route.ts            # POST multipart "file" → public/uploads/, vrne {url:"/uploads/..."}
     cron/missed-checkins/route.ts # POST — alarmi IZOSTANEK_VNOSA (x-cron-secret ali seja ZDRAVNIK)
+components/
+  TrendChart.tsx          # SVG črtni graf trenda meritev z mejnimi črtami L1/L2/L3 (zgornje polne, spodnje pikčaste); točke obarvane po resnosti prek evaluateThresholds — uporablja ga zdravnikov MetricView in kartica meritve pacienta
 lib/
   prisma.ts               # PrismaClient singleton
   auth.ts                 # getSessionUser() — prebere piškotek, vrne User
@@ -130,6 +132,12 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 - Potrjevanje alarma: `POST /api/alerts {"action":"acknowledge","alertId":"..."}` (samo `ZDRAVNIK`) → `status=POTRJEN`, `acknowledgedAt`, `acknowledgedBy`
 - Seznam alarmov: `GET /api/alerts` (zdravnik vidi vse, pacient svoje)
 
+## Grafi meritev (trend)
+
+- `components/TrendChart.tsx` — črtni graf **brez dodatnih odvisnosti** (čisti SVG): točke so meritve, črtkane črte so meje L1/L2/L3 (spodnje meje pikčaste), točka je obarvana po resnosti prekoračitve prek `evaluateThresholds` (zelena v mejah, rumena L1, oranžna L2, rdeča L3). Na voljo je kompakten način (`compact`).
+- Zdravnik vidi graf pod vsako numerično/ tlačno merijo v zavihku **Meritve** (`MetricView` v `DoctorDashboardLovable.tsx`); pacient vidi kompakten graf nad zgodovino v svoji kartici meritve (`MeasurementCard` v `PatientDashboardLovable.tsx`).
+- `prisma/seed.mjs` ustvari 10-dnevno zgodovino meritev (utrip, pritisk, temperatura, kisik, bolečina, počutje), da so grafi takoj vidni pri demo prijavi.
+
 ## AI asistent
 
 - Route `app/api/assistant/route.ts` (samo `PACIENT`): `GET` vrne zgodovino sporočil `PACIENT`+`ASISTENT`; `POST {text}` shrani vprašanje, pokliče LLM in shrani odgovor kot `sender: "ASISTENT"`. Oba zapisa sta v isti tabeli `ChatMessage` — zdravnik vidi celoten pogovor v svojem pogledu "Klepet".
@@ -150,7 +158,7 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 
 Vsi novi pacienti, ustvarjeni prek `POST /api/patients`, dobijo **isto privzeto geslo `pacient123`** (konstanta `DEFAULT_PATIENT_PASSWORD` v `lib/auth.ts`).
 
-Seed podatki: pacient Janez Novak (stanje iz kataloga **Artroskopija kolena** — načrti/priporočila/vaje samodejno iz kataloga), dodatni načrti (utrip, pritisk, temperatura, kisik s standardi bolnice), 2 meritvi (ena čez L2 → demo alarm), 2 zdravili, 4 vnosi knjižnjice, 25 sklopov vaj (PDF), 7 standardov, 2 chat sporočili.
+Seed podatki: pacient Janez Novak (stanje iz kataloga **Artroskopija kolena** — načrti/priporočila/vaje samodejno iz kataloga), dodatni načrti (utrip, pritisk, temperatura, kisik s standardi bolnice), **10-dnevna zgodovina meritev** (utrip, pritisk, temperatura, kisik, bolečina, počutje — ena čez L2 → demo alarm), 2 zdravili, 4 vnosi knjižnjice, 25 sklopov vaj (PDF), 7 standardov, 2 chat sporočili.
 
 ## Konvencije kode
 
@@ -168,9 +176,9 @@ Gre za zdravstvene podatke (GDPR): **samo sintetični (lažni) podatki**, brez p
 
 ## Trenutni obseg (MVP za 24 h)
 
-Must: login, vnos meritev (s sliko), alarmi L1–L3, dashboard z alarmi, SOS, seed podatki.
-Should: grafi meritev, koledar zdravil, knjižnjica, začetni vnos pacienta.
-Nice: chat stub, opozorila ob izostalih vnosih, e-pošta.
+Must (implementirano): login, vnos meritev (s sliko), alarmi L1–L3, dashboard z alarmi, SOS, seed podatki.
+Should (implementirano): grafi meritev (trend — `components/TrendChart.tsx`), koledar zdravil, knjižnjica, začetni vnos pacienta, katalog stanj + AI asistent.
+Nice (še ne): samodejni cron za izostale vnose (trenutno ročni `POST /api/cron/missed-checkins`), pravo pošiljanje e-pošte (trenutno mailto), zVem integracija (stub), grafi na strani pacienta čez celoten odpust.
 
 ## Koristni ročni testi (curl)
 

@@ -81,6 +81,7 @@ Ko zdravnik oceni (ali po vnaprej določenem obdobju brez nesprejemljivih merite
 - **25 PDF vodičev fizioterapije SB Nova Gorica** (lokalno v `public/guides/`, z izvirnim virom) — v knjižnici in v pacientovem načrtu; opomnik »Čas je za začetek vaj« s potrditvijo prejema.
 - Meritve po vrsti vnosa: število, besedilo, pritisk `120/80`, da/ne + opis, slika (rana/EKG); zdravnik lahko vnaša svoje meritve z oceno (varno/nenavadno/kritično).
 - Alarm logika L1/L2/L3 (zgornje in spodnje meje) + SOS + alarmi ob izostanku vnosa. **Pacient takoj vidi opozorilo, če njegova meritev preseže mejo** (L3/SOS → rdeč banner »takoj pokličite 112«, L2 → rumeno; zavihek Alarmi na strani pacienta). Zdravnik potrjuje alarme in pripravlja opomnike (e-pošta).
+- **Grafi trendov meritev** (SVG, brez dodatnih odvisnosti): zdravnik vidi pod vsako numerično merijo črtni graf z mejnimi črtami L1/L2/L3 in točkami, obarvanimi po resnosti prekoračitve; pacient vidi kompakten graf nad zgodovino v svoji kartici meritve. Seed podatki vsebujejo 10-dnevno zgodovino, da so grafi takoj vidni.
 - Standardne meje bolnice na tip meritve (ureja zdravnik), izhodišča pred odpustom (»podatki iz bolnišnice«), koledar zdravil z odkljukavanjem terminov.
 - Knjižnjica znanj (urejanje samo zdravnik) in **AI asistent** (OpenAI-compatible endpoint iz `.env`, kontekst = načrti + meritve + alarmi + knjižnjica + vaje pacienta).
 

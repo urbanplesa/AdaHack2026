@@ -103,8 +103,9 @@ async function main() {
   });
 
   // Merilni načrti iz kataloga (POCUTJE, BOLECINA, GIBLJIVOST, SLIKA_RANE)
+  const plansByType = {};
   for (const p of catalog.plans) {
-    await prisma.measurementPlan.create({
+    const plan = await prisma.measurementPlan.create({
       data: {
         patientId: patient.id,
         type: p.type,
@@ -120,11 +121,11 @@ async function main() {
         thresholdLowL3: p.thresholdLowL3,
       },
     });
+    plansByType[p.type] = plan;
   }
 
   // Dodatni načrti (utrip, pritisk, temperatura, kisik) s standardi bolnice
   const extraTypes = ["UTRIP", "PRITISK", "TEMPERATURA", "KISIK"];
-  let planUtrip = null;
   for (const type of extraTypes) {
     const std = standards.find((s) => s.metricType === type);
     const plan = await prisma.measurementPlan.create({
@@ -146,7 +147,7 @@ async function main() {
         redZone: std.redZone ?? null,
       },
     });
-    if (type === "UTRIP") planUtrip = plan;
+    plansByType[type] = plan;
   }
 
   // Dodeljeni sklopi vaj iz kataloga z izračunanim začetnim datumom (1-3 dni po posegu)
@@ -165,29 +166,68 @@ async function main() {
     });
   }
 
-  // Normalne meritve
-  await prisma.measurement.create({
-    data: {
-      patientId: patient.id,
-      planId: planUtrip.id,
-      type: "UTRIP",
-      value: 72,
-      recordedAt: new Date("2026-11-20T08:00:00Z"),
-    },
-  });
+  // --- Zgodovina meritev (zadnjih 10 dni) — podatki za demo grafov trenda ---
+  async function addM(type, data) {
+    return prisma.measurement.create({
+      data: { patientId: patient.id, planId: plansByType[type]?.id ?? null, type, ...data },
+    });
+  }
+  const day = (d, hm) => new Date(`2026-11-${d}T${hm}:00Z`);
+  const d10 = (i) => String(12 + i).padStart(2, "0"); // 12..21 november 2026
 
-  // Meritev čez mejo L2 → sproži demo alarm
-  const sporocilna = await prisma.measurement.create({
-    data: {
-      patientId: patient.id,
-      planId: planUtrip.id,
-      type: "UTRIP",
-      value: 132,
-      note: "Po hitri hoji po stopnicah, malo težko diham",
-      recordedAt: new Date("2026-11-21T07:30:00Z"),
-    },
-  });
+  // Utrip 2x na dan; 21. 11. zjutraj skok na 132 (čez L2) → edini odprt alarm v seedu
+  const utrip = [
+    ["12", "08:00", 72], ["12", "18:00", 74], ["13", "08:00", 70], ["13", "18:00", 76],
+    ["14", "08:00", 75], ["14", "18:00", 72], ["15", "08:00", 73], ["15", "18:00", 78],
+    ["16", "08:00", 71], ["16", "18:00", 74], ["17", "08:00", 76], ["17", "18:00", 72],
+    ["18", "08:00", 72], ["18", "18:00", 75], ["19", "08:00", 74], ["19", "18:00", 73],
+    ["20", "08:00", 76], ["20", "18:00", 71], ["21", "07:30", 132], ["21", "18:00", 78],
+  ];
+  let sporocilna = null;
+  for (const [d, hm, v] of utrip) {
+    const m = await addM("UTRIP", {
+      value: v,
+      recordedAt: day(d, hm),
+      ...(v === 132 ? { note: "Po hitri hoji po stopnicah, malo težko diham" } : {}),
+    });
+    if (v === 132) sporocilna = m;
+  }
 
+  // Bolečina 2x na dan — pada (izboljševanje)
+  const bolecina = [4, 3, 3, 3, 4, 2, 3, 2, 2, 2, 3, 1, 2, 1, 2, 2, 1, 1, 2, 1];
+  let bi = 0;
+  for (let i = 0; i < 10; i++) {
+    for (const hm of ["08:00", "18:00"]) {
+      await addM("BOLECINA", { value: bolecina[bi++], recordedAt: day(d10(i), hm) });
+    }
+  }
+
+  // Pritisk 1x na dan (value = sistolični, valueText "sys/dia")
+  const pritiski = [[126, 84], [124, 82], [130, 86], [128, 84], [134, 88], [132, 86], [129, 84], [136, 90], [133, 87], [138, 90]];
+  for (let i = 0; i < pritiski.length; i++) {
+    const [sys, dia] = pritiski[i];
+    await addM("PRITISK", { value: sys, valueText: `${sys}/${dia}`, recordedAt: day(d10(i), "08:00") });
+  }
+
+  // Temperatura 1x na dan (17. 11. rahla vročina 37,6 — zgodovina, brez alarma)
+  const temperature = [36.6, 36.8, 37.0, 36.7, 36.9, 37.6, 37.1, 36.8, 37.0, 36.9];
+  for (let i = 0; i < temperature.length; i++) {
+    await addM("TEMPERATURA", { value: temperature[i], recordedAt: day(d10(i), "19:00") });
+  }
+
+  // Kisik 1x na dan (vse v mejah)
+  const kisik = [98, 97, 98, 97, 98, 97, 99, 98, 97, 98];
+  for (let i = 0; i < kisik.length; i++) {
+    await addM("KISIK", { value: kisik[i], recordedAt: day(d10(i), "08:00") });
+  }
+
+  // Počutje (besedilo) na nekaj dni
+  await addM("POCUTJE", { valueText: "Dobro, malo utrujen", recordedAt: day("12", "20:00") });
+  await addM("POCUTJE", { valueText: "Normalno", recordedAt: day("15", "20:00") });
+  await addM("POCUTJE", { valueText: "Dobro, malo bolečin v kolenu", recordedAt: day("18", "20:00") });
+  await addM("POCUTJE", { valueText: "Po stopnicah težko diham", recordedAt: day("21", "08:00") });
+
+  // Meritev čez mejo L2 → demo alarm
   await prisma.alert.create({
     data: {
       patientId: patient.id,
