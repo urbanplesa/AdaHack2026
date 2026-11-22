@@ -57,8 +57,7 @@ app/
     library/[id]/route.ts      # PATCH/DELETE vnos knjižnjice (ZDRAVNIK)
     standards/route.ts         # GET standardne meje / POST upsert po metricType (ZDRAVNIK)
     alerts/route.ts            # GET seznam; POST {action:"sos"} | {action:"acknowledge",alertId}
-    chat/route.ts              # GET/POST sporočila (pacient / zdravnik s patientId)
-    assistant/route.ts         # GET/POST pogovor z AI asistentom (samo PACIENT; bere knjižnico + meritve + načrte + vaje)
+    assistant/route.ts         # GET/POST pogovor z AI asistentom (samo PACIENT; bere knjižnico + meritve + načrte + vaje; zgodovina v ChatMessage, sender PACIENT/ASISTENT)
     medications/route.ts       # POST {medicationId,time:"HH:MM"} — preklopi današnji odmerek
     upload/route.ts            # POST multipart "file" → public/uploads/, vrne {url:"/uploads/..."}
     cron/missed-checkins/route.ts # POST — ročni sprožilec pregleda izostalih vnosov (x-cron-secret ali seja ZDRAVNIK); samodejni pregled teče prek instrumentation.ts
@@ -162,7 +161,7 @@ Ob vsakem `POST /api/measurements` primerjamo vrednost z mejami plana — zgornj
 
 Vsi novi pacienti, ustvarjeni prek `POST /api/patients`, dobijo **isto privzeto geslo `pacient123`** (konstanta `DEFAULT_PATIENT_PASSWORD` v `lib/auth.ts`).
 
-Seed podatki: pacient Janez Novak (stanje iz kataloga **Artroskopija kolena** — načrti/priporočila/vaje samodejno iz kataloga), dodatni načrti (utrip, pritisk, temperatura, kisik s standardi bolnice), **10-dnevna zgodovina meritev** (utrip, pritisk, temperatura, kisik, bolečina, počutje — ena čez L2 → demo alarm), 2 zdravili, 4 vnosi knjižnjice, 25 sklopov vaj (PDF), 7 standardov, 2 chat sporočili.
+Seed podatki: pacient Janez Novak (stanje iz kataloga **Artroskopija kolena** — načrti/priporočila/vaje samodejno iz kataloga), dodatni načrti (utrip, pritisk, temperatura, kisik s standardi bolnice), **10-dnevna zgodovina meritev** (utrip, pritisk, temperatura, kisik, bolečina, počutje — ena čez L2 → demo alarm), 2 zdravili, 4 vnosi knjižnjice, 25 sklopov vaj (PDF), 7 standardov, začetni pogovor z AI asistentom (2 sporočili).
 
 ## Konvencije kode
 
@@ -209,9 +208,7 @@ curl -b /tmp/d.txt -X POST http://localhost:3000/api/alerts \
   -H 'Content-Type: application/json' -d '{"action":"acknowledge","alertId":"<id>"}'
 # upload slike rane (vrne {"url":"/uploads/..."})
 curl -b /tmp/c.txt -X POST http://localhost:3000/api/upload -F "file=@slika.jpg"
-# chat, zdravilo, preverjanje izostalih vnosov
-curl -b /tmp/c.txt -X POST http://localhost:3000/api/chat \
-  -H 'Content-Type: application/json' -d '{"text":"Danes sem dobro."}'
+# zdravilo, preverjanje izostalih vnosov
 curl -b /tmp/c.txt -X POST http://localhost:3000/api/medications \
   -H 'Content-Type: application/json' -d '{"medicationId":"<id>","time":"20:00"}'
 # ročni sprožilec pregleda izostalih vnosov (sicer samodejno vsakih 15 min prek instrumentation.ts)

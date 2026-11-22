@@ -18,7 +18,6 @@ export default async function ZdravnikPage() {
       measurements: { orderBy: { recordedAt: "desc" }, include: { plan: true } },
       alerts: { orderBy: { createdAt: "desc" }, include: { measurement: true } },
       medications: true,
-      chatMessages: { orderBy: { createdAt: "asc" } },
       exerciseAssignments: { include: { exerciseSet: true }, orderBy: { startDate: "asc" } },
     },
   });
@@ -38,7 +37,6 @@ export default async function ZdravnikPage() {
     );
     const latestActivity = [
       ...patient.measurements.map((item) => item.recordedAt),
-      ...patient.chatMessages.map((item) => item.createdAt),
       patient.createdAt,
     ].sort((a, b) => b.getTime() - a.getTime())[0];
     // Zadnja ocena stanja iz meritev (severity) — če jo je dal zdravnik
@@ -117,12 +115,6 @@ export default async function ZdravnikPage() {
         duration: item.duration,
         note: item.note,
         takenSlots: item.takenSlots,
-      })),
-      chatMessages: patient.chatMessages.map((item) => ({
-        id: item.id,
-        sender: item.sender,
-        text: item.text,
-        createdAt: item.createdAt.toISOString(),
       })),
       exerciseAssignments: patient.exerciseAssignments.map((a) => ({
         id: a.id,

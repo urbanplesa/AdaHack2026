@@ -185,7 +185,7 @@ model ChatMessage {
   id        String   @id @default(cuid())
   patientId String
   patient   Patient  @relation(fields: [patientId], references: [id])
-  sender    String // PACIENT | ZDRAVNIK | ASISTENT
+  sender    String // PACIENT | ASISTENT — zgodovina pogovora z AI asistentom
   text      String
   createdAt DateTime @default(now())
 }

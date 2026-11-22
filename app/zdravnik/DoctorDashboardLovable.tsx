@@ -13,7 +13,6 @@ type Plan = {
 type Measurement = { id: string; type: string; value: number | null; valueText: string | null; note: string | null; photoUrl: string | null; author: string; severity: string | null; recordedAt: string };
 type Alert = { id: string; severity: string; status: string; message: string; createdAt: string; measurementType: string | null };
 type Medication = { id: string; name: string; dosage: string; times: string; duration: string | null; note: string | null; takenSlots: string };
-type ChatMessage = { id: string; sender: string; text: string; createdAt: string };
 type ExerciseSet = { id: string; name: string; condition: string; instructions: string; pdfUrl: string | null; sourceUrl: string | null; language: string; kind: string; pages: number | null };
 type ExerciseAssignment = { id: string; exerciseSetId: string; startDate: string; acknowledgedDate: string | null; exerciseSet: ExerciseSet };
 type LibraryEntry = { id: string; category: string; title: string; content: string; url: string | null; sourceUrl: string | null };
@@ -24,7 +23,7 @@ type Patient = {
   generalRecommendations: string | null; equipment: string | null; warningSymptoms: string | null;
   alarmYellow: string | null; alarmRed: string | null; catalogSource: string | null; careCustomized: boolean;
   name: string; email: string; latestActivity: string | null; highestAlert: string | null; lastSeverity: string | null;
-  plans: Plan[]; measurements: Measurement[]; alerts: Alert[]; medications: Medication[]; chatMessages: ChatMessage[];
+  plans: Plan[]; measurements: Measurement[]; alerts: Alert[]; medications: Medication[];
   exerciseAssignments: ExerciseAssignment[];
 };
 type CatalogCondition = {
@@ -73,14 +72,13 @@ export default function DoctorDashboardLovable({ patients, userName, libraryEntr
       {patient && <section className="min-w-0 border-t pt-6 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
         <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-display text-3xl">{patient.name}</h2><p className="mt-1 text-sm text-muted-foreground">{patient.diagnosis}</p></div><span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-primary">{patient.status}</span></div>
         {isOverdue(patient) && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4"><div><p className="text-sm font-bold text-amber-900">{patient.latestActivity ? "Vsaj 3 dni brez novih podatkov" : "Pacient še ni vpisal podatkov"}</p><p className="mt-1 text-xs text-amber-800">Čas je za opomnik pacientu.</p></div><a className="rounded-lg border border-amber-400 bg-white px-4 py-2 text-sm font-bold text-amber-900" href={`mailto:${patient.email}?subject=${encodeURIComponent("Opomnik za vnos podatkov — AdaHack2026")}&body=${encodeURIComponent(`Pozdravljeni, ${patient.name},\n\nprosimo, vnesite ${patient.latestActivity ? "nove" : "prve"} podatke o svojem počutju in meritvah.\n\nLep pozdrav,\n${userName}`)}`}>Pripravi opomnik (e-pošta)</a></div>}
-        <nav className="mt-6 flex gap-1 overflow-x-auto border-b">{([["alerts", "Alarmi"], ["metrics", "Meritve"], ["care", "Okrevanje"], ["exercises", "Vaje"], ["history", "Zgodovina"], ["contacts", "Kontakti"], ["chat", "Klepet"], ["library", "Knjižnjica"], ["standards", "Standardi"]] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setTab(value)} className={`px-3 py-3 text-sm font-bold ${tab === value ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</nav>
+        <nav className="mt-6 flex gap-1 overflow-x-auto border-b">{([["alerts", "Alarmi"], ["metrics", "Meritve"], ["care", "Okrevanje"], ["exercises", "Vaje"], ["history", "Zgodovina"], ["contacts", "Kontakti"], ["library", "Knjižnjica"], ["standards", "Standardi"]] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setTab(value)} className={`px-3 py-3 text-sm font-bold ${tab === value ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{label}</button>)}</nav>
         {tab === "alerts" && <AlertsView patient={patient} />}
         {tab === "metrics" && <MetricView patient={patient} onEntry={() => setEntryFor(patient)} onHospital={() => setHospitalFor(patient)} />}
         {tab === "care" && <CareView patient={patient} />}
         {tab === "exercises" && <ExercisesView patient={patient} exerciseSets={exerciseSets} />}
         {tab === "history" && <HistoryView patient={patient} />}
         {tab === "contacts" && <ContactsView patient={patient} />}
-        {tab === "chat" && <ChatView patient={patient} />}
         {tab === "library" && <LibraryView entries={libraryEntries} />}
         {tab === "standards" && <StandardsView standards={standards} />}
       </section>}
@@ -337,10 +335,4 @@ function AlertsView({ patient }: { patient: Patient }) {
   const sorted = [...patient.alerts].sort((a, b) => (a.status === b.status ? 0 : a.status === "ODPRT" ? -1 : 1) || (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
   async function acknowledge(alertId: string) { const res = await fetch("/api/alerts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "acknowledge", alertId }) }); if (res.ok) router.refresh(); }
   return <div className="space-y-3 pt-5">{sorted.length ? sorted.map((a) => <article key={a.id} className={`rounded-xl border p-4 ${a.status === "ODPRT" ? "border-primary bg-card" : "border-border bg-muted"}`}><div className="flex flex-wrap items-center justify-between gap-3"><span className={`rounded-md px-2 py-1 text-xs font-bold ${alertClass(a.severity)}`}>{a.severity}</span><span className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleString("sl-SI")}</span></div><p className="mt-2 text-sm">{a.message}</p><div className="mt-3 flex items-center justify-between"><span className="text-xs font-bold">{a.status === "ODPRT" ? "Odprt" : "Potrjen"}</span>{a.status === "ODPRT" && <button type="button" onClick={() => acknowledge(a.id)} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-white">Potrdi</button>}</div></article>) : <p className="py-5 text-sm text-muted-foreground">Ni alarmov.</p>}</div>;
-}
-
-function ChatView({ patient }: { patient: Patient }) {
-  const router = useRouter(); const [text, setText] = useState("");
-  async function send() { if (!text.trim()) return; const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text.trim(), patientId: patient.id }) }); if (res.ok) { setText(""); router.refresh(); } }
-  return <div className="pt-5"><Card title="Klepet s pacientom"><p className="mb-3 text-sm text-muted-foreground">Klepet ni namenjen nujnim primerom — ob nujnem stanju pacient pokliče 112.</p>{patient.chatMessages.length ? <div className="mb-4 max-h-96 space-y-3 overflow-y-auto">{patient.chatMessages.map((m) => <div key={m.id} className={`max-w-[80%] rounded-xl p-3 ${m.sender === "ZDRAVNIK" ? "ml-auto bg-secondary" : "bg-muted"}`}><p className="text-sm">{m.text}</p><p className="mt-1 text-xs text-muted-foreground">{m.sender === "ASISTENT" ? "AI asistent" : m.sender === "PACIENT" ? "Pacient" : "Zdravnik"} · {new Date(m.createdAt).toLocaleString("sl-SI")}</p></div>)}</div> : <p className="mb-4 text-sm text-muted-foreground">Ni sporočil.</p>}<div className="flex gap-2"><input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} className="flex-1 rounded-lg border border-border px-3 py-3" placeholder="Odgovorite pacientu…" /><button type="button" onClick={send} className="rounded-lg bg-primary px-5 py-3 font-bold text-white">Pošlji</button></div></Card></div>;
 }

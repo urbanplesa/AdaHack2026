@@ -16,7 +16,6 @@ Po odpustu iz bolnišnice se pacienti pogosto soočajo s pomanjkanjem zdravstven
 - Knjižnjica meritev za bolezni/poškode (zdravnik izbere samo potrebne)
 - Naprave, ki merijo in samodejno pošiljajo podatke
 - AI asistent za navodila in vprašanja glede na podane knjižnjice
-- Chat window za zdravnika
 - Koledar za zdravila, checkbox da si vzel
 - Prehrana
 - SOS gumb

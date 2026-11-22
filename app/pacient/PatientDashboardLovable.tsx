@@ -34,15 +34,13 @@ export default function PatientDashboardLovable(props: {
 }) {
   const [tab, setTab] = useState("daily");
   const [measurements, setMeasurements] = useState(props.measurements);
-  const [chatMessages, setChatMessages] = useState(props.chatMessages);
-  const [chatText, setChatText] = useState("");
   const [medications, setMedications] = useState(props.medications);
   const [assignments, setAssignments] = useState(props.exerciseAssignments);
-  const [aiMessages, setAiMessages] = useState<ChatMessage[]>(props.chatMessages.filter((m) => m.sender !== "ZDRAVNIK"));
+  const [aiMessages, setAiMessages] = useState<ChatMessage[]>(props.chatMessages);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiText, setAiText] = useState("");
   const [liveAlert, setLiveAlert] = useState<PatientAlert | null>(null);
-  const tabs = [["daily", "Počutje"], ["alerts", "Alarmi"], ["care", "Moj načrt"], ["measurements", "Meritve"], ["library", "Knjižnjica"], ["medications", "Zdravila"], ["chat", "Klepet"], ["ai", "AI asistent"]] as const;
+  const tabs = [["daily", "Počutje"], ["alerts", "Alarmi"], ["care", "Moj načrt"], ["measurements", "Meritve"], ["library", "Knjižnjica"], ["medications", "Zdravila"], ["ai", "AI asistent"]] as const;
 
   // Alarmi: vsi (iz strežnika) + morebitni ravnokar sprožen (še ni v props)
   const allAlerts = useMemo(
@@ -104,7 +102,6 @@ export default function PatientDashboardLovable(props: {
     {tab === "measurements" && <Measurements plans={props.plans} measurements={measurements} onSaved={handleSaved} />}
     {tab === "library" && <Library entries={props.libraryEntries} guides={props.exerciseSets} />}
     {tab === "medications" && <MedicationCalendar medications={medications} onChanged={setMedications} />}
-    {tab === "chat" && <Chat messages={chatMessages} text={chatText} onText={setChatText} onSent={async () => { if (!chatText.trim()) return; const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: chatText }) }); if (res.ok) { const m = await res.json(); setChatMessages((old) => [...old, m]); setChatText(""); } }} />}
     {tab === "ai" && <Ai messages={aiMessages} text={aiText} onText={setAiText} loading={aiLoading} onSend={async () => { if (!aiText.trim() || aiLoading) return; const text = aiText.trim(); setAiText(""); setAiLoading(true); try { const res = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) }); if (res.ok) { const data = await res.json(); setAiMessages((old) => [...old, data.userMessage, data.assistantMessage]); } } finally { setAiLoading(false); } }} />}
   </>;
 }
@@ -237,9 +234,6 @@ function MedicationCalendar({ medications, onChanged }: { medications: Medicatio
     if (res.ok) { const u = await res.json(); onChanged(medications.map((x) => x.id === m.id ? { ...x, takenSlots: u.takenSlots } : x)); }
   }
   return <Card title={today.toLocaleDateString("sl-SI", { weekday: "long", day: "numeric", month: "long" })}><div className="mt-2 space-y-3">{rows.sort((a, b) => a.time.localeCompare(b.time)).map(({ m, time }) => { const taken = safeSlots(m.takenSlots).includes(`${todayStr} ${time}`); return <label key={`${m.id}-${time}`} className="flex items-center justify-between gap-3 rounded-xl border border-border p-4"><span><strong>{time}</strong> · {m.name} · {m.dosage}</span><input type="checkbox" checked={taken} onChange={() => toggle(m, time)} className="h-5 w-5 accent-primary" /></label>; })}</div></Card>;
-}
-function Chat({ messages, text, onText, onSent }: { messages: ChatMessage[]; text: string; onText: (v: string) => void; onSent: () => void }) {
-  return <Card title="Sporočila z zdravnikom"><p className="mb-3 border-b pb-3 text-sm text-muted-foreground">Klepet ni namenjen nujnim primerom. Ob nujnem stanju pokličite 112.</p><div className="mb-4 max-h-96 space-y-3 overflow-y-auto">{messages.map((m) => <div key={m.id} className={`max-w-[80%] rounded-xl p-3 ${m.sender === "PACIENT" ? "ml-auto bg-secondary" : "bg-muted"}`}><p className="text-sm">{m.text}</p><p className="mt-1 text-xs text-muted-foreground">{m.sender === "ASISTENT" ? "AI asistent" : m.sender === "ZDRAVNIK" ? "Zdravnik" : "Jaz"} · {new Date(m.createdAt).toLocaleString("sl-SI")}</p></div>)}</div><div className="flex gap-2"><input value={text} onChange={(e) => onText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSent()} className="flex-1 rounded-lg border border-border px-3 py-3" placeholder="Napišite sporočilo…" /><button type="button" onClick={onSent} className="rounded-lg bg-primary px-5 py-3 font-bold text-white">Pošlji</button></div></Card>;
 }
 function Ai({ messages, text, onText, onSend, loading }: { messages: ChatMessage[]; text: string; onText: (v: string) => void; onSend: () => void; loading: boolean }) {
   return <Card title="AI asistent"><p className="mb-3 text-sm text-amber-700">Odgovori asistenta so informativni in niso zdravstveni nasvet. V nujnih primerih pokličite 112.</p><div className="mb-4 max-h-96 space-y-3 overflow-y-auto">{messages.map((m) => <div key={m.id} className={`max-w-[80%] rounded-xl p-3 ${m.sender === "PACIENT" ? "ml-auto bg-secondary" : "bg-muted"}`}><p className="text-sm">{m.text}</p><p className="mt-1 text-xs text-muted-foreground">{m.sender === "ASISTENT" ? "AI asistent" : "Jaz"} · {new Date(m.createdAt).toLocaleString("sl-SI")}</p></div>)}{loading && <div className="max-w-[80%] rounded-xl bg-muted p-3"><p className="text-sm text-muted-foreground">AI asistent razmišlja…</p></div>}</div><div className="flex gap-2"><input value={text} onChange={(e) => onText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSend()} className="flex-1 rounded-lg border border-border px-3 py-3" placeholder="Vprašajte AI asistenta…" /><button type="button" onClick={onSend} disabled={loading} className="rounded-lg bg-primary px-5 py-3 font-bold text-white disabled:opacity-60">Pošlji</button></div></Card>;
